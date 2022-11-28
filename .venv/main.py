@@ -1,0 +1,229 @@
+import Pokemon
+import csvreader
+
+import csv
+import tkinter as tk
+from tkinter import font as tkfont
+from PIL import ImageTk, Image  
+import random
+from pathlib import Path
+
+
+CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
+pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
+Encounters = [] #keeps track of route names
+fileName = [] #keeps track of csv file names
+PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
+
+#read list of routes
+path = Path(".venv/csv_files/routes.csv")
+with open(path, newline='') as csvfile:
+    routeReader = csv.DictReader(csvfile)
+    for row in routeReader:
+        Encounters.append(row['routename'])
+        fileName.append(row['filename'])
+        
+def rollEncounter(route, controller):
+    PokemonChoices = csvreader.getPokemon(route)
+    randomChoice = "Unknown"
+
+    if (all(PokemonChoices) in pkmnname):
+        randomChoice = Pokemon.Pokemon("NOCAPTURE")
+    else:
+        while (randomChoice in pkmnname and randomChoice == "Unknown"):
+            randomChoice = random.choice(PokemonChoices)
+        
+    choice = Pokemon.Pokemon(randomChoice)
+    choice.setForms(randomChoice)
+    CaughtPokemon.append(choice)
+    pkmnname.append(randomChoice)
+    if (choice.forms.__len__ != 0):
+        for form in choice.forms:
+            tempMon = Pokemon.Pokemon(form)
+            tempMon.setForms(form)
+            CaughtPokemon.append(tempMon)
+            pkmnname.append(form)
+            
+    controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
+    controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
+    controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
+    controller.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
+    controller.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
+    controller.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
+    controller.show_frame("RolledEncounter")
+    return choice
+
+def removePokemon(pokemonName):
+    deletedPokemon = Pokemon.Pokemon(pokemonName)
+    CaughtPokemon.remove(deletedPokemon)
+    for forms in deletedPokemon.forms:
+        CaughtPokemon.remove(Pokemon.Pokemon(forms))
+     
+def confirmPokemon(pokemonName, routeName):
+    PkmnRoutePairs.append([pokemonName, routeName])
+
+#Pokemon has yet to be rolled
+class UnknownPokemon(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Unknown.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Pokemon not yet rolled")
+        PokemonName.pack()
+        index = Encounters.index(Route)
+        roll = tk.Button(self, text="Roll Capture", command=lambda: [rollEncounter(fileName[index], controller)])
+        roll.pack()
+        
+class RolledEncounter(tk.Frame):
+    def __init__(self, parent, controller, Route, Pokemon):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
+        resizeImage = PokemonImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text=Pokemon.name)
+        PokemonName.pack()
+
+        successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
+        successfulCapture.pack()
+        failedCapture = tk.Button(self, text="Failed Capture", command=lambda: controller.show_frame("FailedCatch"))
+        failedCapture.pack()
+        
+class SuccessfulCatch(tk.Frame):
+    def __init__(self, parent, controller, Route, Pokemon):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
+        PokemonImage = PokemonImage.convert("RGB")
+        d = PokemonImage.getdata()
+        new_image = []
+        for item in d:
+            new_image.append((item[0], int(min(2*item[1], 255)), item[2]))
+        PokemonImage.putdata(new_image)
+        resizeImage = PokemonImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text=Pokemon.name)
+        PokemonName.pack()
+        
+class FailedCatch(tk.Frame):
+    def __init__(self, parent, controller, Route, Pokemon):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
+        PokemonImage = PokemonImage.convert("RGB")
+        d = PokemonImage.getdata()
+        new_image = []
+        for item in d:
+            new_image.append((int(min(4*item[0], 255)), item[1], item[2]))
+        PokemonImage.putdata(new_image)
+        resizeImage = PokemonImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text=Pokemon.name)
+        PokemonName.pack()
+
+#window = tk.Tk()
+#window.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
+
+
+
+
+
+class Node(tk.Frame):
+    def __init__(self, index, *args, **kwargs):
+        tk.Frame.__init__(self, *args, **kwargs)
+        Route = Encounters[index]
+        #pkmn = rollEncounter(fileName[index])
+        self.title_font = tkfont.Font(family='Comic Sans', size=18, weight="bold", slant="italic")
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
+        self.frames = {}
+        self.frames["UnknownPokemon"] = UnknownPokemon(parent=self.container, Route=Route, controller=self)
+        #self.frames["RolledEncounter"] = RolledEncounter(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+        #self.frames["SuccessfulCatch"] = SuccessfulCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+        #self.frames["FailedCatch"] = FailedCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+        self.frames["UnknownPokemon"].grid(row=0, column=0, sticky="nsew")
+        #self.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
+        #self.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
+        #self.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
+        self.show_frame("UnknownPokemon")
+
+    def show_frame(self, page_name):
+        frame = self.frames[page_name]
+        frame.tkraise()
+        
+app = tk.Tk()
+app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
+# Create a frame for the canvas with non-zero row&column weights
+frame_main = tk.Frame(app, bg="gray")
+frame_main.grid(sticky='news')
+frame_canvas = tk.Frame(frame_main)
+frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')
+frame_canvas.grid_rowconfigure(0, weight=1)
+frame_canvas.grid_columnconfigure(0, weight=1)
+# Set grid_propagate to False to allow 5-by-5 buttons resizing later
+frame_canvas.grid_propagate(False)
+
+# Add a canvas in that frame
+canvas = tk.Canvas(frame_canvas, bg="yellow")
+canvas.grid(row=0, column=0, sticky="news")
+
+# Link a scrollbar to the canvas
+vsb = tk.Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)
+vsb.grid(row=0, column=1, sticky='ns')
+canvas.configure(yscrollcommand=vsb.set)
+nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
+for r in range(4):
+    for c in range(8):
+        index = 8*r + c
+        nodes[r][c] = Node(index).grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+canvas.config(scrollregion=canvas.bbox("all"))
+app.mainloop()
+
+    
+#TODO
+"""
+1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter
+2. Get scrollbar working
+3. Add saving and loading functionality
+4. Download all Pokemon images
+5. Input Encounters
+6. Fix layout to make it look nice and symmetrical
+"""
+    
+        
+    
+        
