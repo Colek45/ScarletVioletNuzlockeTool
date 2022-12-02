@@ -35,7 +35,7 @@ def rollEncounter(route, controller):
         if (pkmnname.count(pkmn) <= 0): 
             allCaught = False
             break
-    if (allCaught): randomChoice = Pokemon.Pokemon("NOCAPTURE") 
+    if (allCaught): choice = Pokemon.Pokemon("NOCAPTURE") 
     else:
         while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
@@ -50,7 +50,8 @@ def rollEncounter(route, controller):
                 tempMon.setForms(form)
                 CaughtPokemon.append(tempMon)
                 pkmnname.append(form)
-            
+    
+    confirmPokemon(choice, route)
     controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
     controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
     controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
@@ -62,9 +63,10 @@ def rollEncounter(route, controller):
 
 def removePokemon(pokemonName):
     deletedPokemon = Pokemon.Pokemon(pokemonName)
-    CaughtPokemon.remove(deletedPokemon)
+    pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
-        CaughtPokemon.remove(Pokemon.Pokemon(forms))
+        pkmnname.remove(Pokemon.Pokemon(forms))
+    print(pkmnname)
      
 def confirmPokemon(pokemonName, routeName):
     PkmnRoutePairs.append([pokemonName, routeName])
@@ -112,7 +114,7 @@ class RolledEncounter(tk.Frame):
 
         successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
         successfulCapture.pack()
-        failedCapture = tk.Button(self, text="Failed Capture", command=lambda: controller.show_frame("FailedCatch"))
+        failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
         failedCapture.pack()
         
 class SuccessfulCatch(tk.Frame):
@@ -122,11 +124,11 @@ class SuccessfulCatch(tk.Frame):
         label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
         label.pack(side="top", fill="x", pady=10)
         PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
-        PokemonImage = PokemonImage.convert("RGB")
+        PokemonImage = PokemonImage.convert("RGBA")
         d = PokemonImage.getdata()
         new_image = []
         for item in d:
-            new_image.append((item[0], int(min(2*item[1], 255)), item[2]))
+            new_image.append((item[0], int(min(2*item[1], 255)), item[2], item[3]))
         PokemonImage.putdata(new_image)
         resizeImage = PokemonImage.resize((75,75))
         img = ImageTk.PhotoImage(master=self, image=resizeImage)
@@ -145,11 +147,11 @@ class FailedCatch(tk.Frame):
         label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
         label.pack(side="top", fill="x", pady=10)
         PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
-        PokemonImage = PokemonImage.convert("RGB")
+        PokemonImage = PokemonImage.convert("RGBA")
         d = PokemonImage.getdata()
         new_image = []
         for item in d:
-            new_image.append((int(min(4*item[0], 255)), item[1], item[2]))
+            new_image.append((int(min(4*item[0], 255)), item[1], item[2], item[3]))
         PokemonImage.putdata(new_image)
         resizeImage = PokemonImage.resize((75,75))
         img = ImageTk.PhotoImage(master=self, image=resizeImage)
@@ -227,9 +229,10 @@ app.mainloop()
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter
 2. Get scrollbar working
 3. Add saving and loading functionality
-4. Download all Pokemon images
-5. Input Encounters
+4. Download all Pokemon images (COMPLETE)
+5. Input Encounters into csv files
 6. Fix layout to make it look nice and symmetrical
+7. Deal with version exclusives
 """
     
         
