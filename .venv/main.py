@@ -26,23 +26,30 @@ with open(path, newline='') as csvfile:
 def rollEncounter(route, controller):
     PokemonChoices = csvreader.getPokemon(route)
     randomChoice = "Unknown"
-
-    if (all(PokemonChoices) in pkmnname):
-        randomChoice = Pokemon.Pokemon("NOCAPTURE")
+    #print(PokemonChoices)
+    
+    print(pkmnname)
+    noDupes= [*set(PokemonChoices)]
+    allCaught = True
+    for pkmn in noDupes:
+        if (pkmnname.count(pkmn) <= 0): 
+            allCaught = False
+            break
+    if (allCaught): randomChoice = Pokemon.Pokemon("NOCAPTURE") 
     else:
-        while (randomChoice in pkmnname and randomChoice == "Unknown"):
+        while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
-        
-    choice = Pokemon.Pokemon(randomChoice)
-    choice.setForms(randomChoice)
-    CaughtPokemon.append(choice)
-    pkmnname.append(randomChoice)
-    if (choice.forms.__len__ != 0):
-        for form in choice.forms:
-            tempMon = Pokemon.Pokemon(form)
-            tempMon.setForms(form)
-            CaughtPokemon.append(tempMon)
-            pkmnname.append(form)
+            
+        choice = Pokemon.Pokemon(randomChoice)
+        choice.setForms(randomChoice)
+        CaughtPokemon.append(choice)
+        pkmnname.append(randomChoice)
+        if (choice.forms.__len__ != 0):
+            for form in choice.forms:
+                tempMon = Pokemon.Pokemon(form)
+                tempMon.setForms(form)
+                CaughtPokemon.append(tempMon)
+                pkmnname.append(form)
             
     controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
     controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
@@ -90,6 +97,7 @@ class RolledEncounter(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
         label.pack(side="top", fill="x", pady=10)
+        print(Pokemon.name)
         PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
         resizeImage = PokemonImage.resize((75,75))
         img = ImageTk.PhotoImage(master=self, image=resizeImage)
