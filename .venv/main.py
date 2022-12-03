@@ -57,10 +57,12 @@ def rollEncounter(route, controller):
                 CaughtPokemon.append(tempMon)
                 pkmnname.append(form)
     
+    index = fileName.index(route)
+    Route = Encounters[index]
     confirmPokemon(choice, route)
-    controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
-    controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
-    controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=route, Pokemon=choice, controller=controller)
+    controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
+    controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
+    controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
     controller.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
     controller.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
