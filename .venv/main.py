@@ -4,6 +4,7 @@ import csvreader
 import csv
 import tkinter as tk
 from tkinter import font as tkfont
+from tkinter.filedialog import asksaveasfile
 from PIL import ImageTk, Image  
 import random
 from pathlib import Path
@@ -15,17 +16,27 @@ pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names in
 Encounters = [] #keeps track of route names
 fileName = [] #keeps track of csv file names
 PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
-LevelCaps = [ 15 , 16 , 17 , 19 , 21 , 24 , 27 , 28 , 30 , 33 , 36 , 42 , 44 , 45 , 48 , 51 , 55 , 56 , 61 , 62 , 63 , 63 , 65 , 67]
-Order =     ["G1","T1","G2","T2","S1","G3","S2","T3","G4","S3","G5","G6","T4","G7","G8","S4","T5","S5","Cl","E4","Ar","Pe","Ne","ST"]
+LevelCaps = [] #keeps track of level caps
+scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
+violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
+currentLevelCap=15
+isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
 #read list of routes
-path = Path(".venv/csv_files/routes.csv")
-with open(path, newline='') as csvfile:
+rpath = Path(".venv/csv_files/routes.csv")
+with open(rpath, newline='') as csvfile:
     routeReader = csv.DictReader(csvfile)
     for row in routeReader:
         Encounters.append(row['routename'])
         fileName.append(row['filename'])
+
+#import all level caps
+lpath = Path(".venv/csv_files/levelcaps.csv")
+with open(lpath, newline='') as csvfile:
+    routeReader = csv.DictReader(csvfile)
+    for row in routeReader:
+        LevelCaps.append(row)
         
 def rollEncounter(route, controller):
     pair = csvreader.getPokemon(route)
@@ -45,6 +56,11 @@ def rollEncounter(route, controller):
     else:
         while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
+            index = [y[0] for y in PokemonLevels].index(randomChoice)
+            if isScarlet:
+                if randomChoice in violetExclusives or int(PokemonLevels[index][1]) > currentLevelCap: randomChoice = "Unknown"
+            else:
+                if randomChoice in scarletExclusives or int(PokemonLevels[index][1]) > currentLevelCap: randomChoice = "Unknown"
             
         choice = Pokemon.Pokemon(randomChoice)
         choice.setForms(randomChoice)
@@ -59,7 +75,7 @@ def rollEncounter(route, controller):
     
     index = fileName.index(route)
     Route = Encounters[index]
-    confirmPokemon(choice, route)
+    confirmPokemon(choice.name, route)
     controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
@@ -70,10 +86,10 @@ def rollEncounter(route, controller):
     return choice
 
 def removePokemon(pokemonName):
-    deletedPokemon = Pokemon.Pokemon(pokemonName)
+    deletedPokemon = pokemonName
     pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
-        pkmnname.remove(Pokemon.Pokemon(forms))
+        pkmnname.remove(Pokemon.Pokemon(forms).name)
     print(pkmnname)
      
 def confirmPokemon(pokemonName, routeName):
@@ -183,7 +199,7 @@ class Node(tk.Frame):
         tk.Frame.__init__(self, *args, **kwargs)
         Route = Encounters[index]
         #pkmn = rollEncounter(fileName[index])
-        self.title_font = tkfont.Font(family='Comic Sans', size=18, weight="bold", slant="italic")
+        self.title_font = tkfont.Font(family='sans', size=14, weight="bold", slant="italic")
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
@@ -202,45 +218,68 @@ class Node(tk.Frame):
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
+
+def switch():
+    global isScarlet
+    if isScarlet:
+        on_button.config(image = off)
+        isScarlet = False
+    else:
+        on_button.config(image = on)
+        isScarlet = True
+        
+def save():
+    file = asksaveasfile(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
+    with open(file, 'w', newline='') as f:
+        f.writerow(['Pokemon','Route'])
+        for pair in PkmnRoutePairs:
+            f.writerow(pair[0],pair[1])
+
+def load():
+    print("We need to implement this")
+        
+ 
         
 app = tk.Tk()
 app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
-# Create a frame for the canvas with non-zero row&column weights
-frame_main = tk.Frame(app, bg="gray")
-frame_main.grid(sticky='news')
-frame_canvas = tk.Frame(frame_main)
-frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')
-frame_canvas.grid_rowconfigure(0, weight=1)
-frame_canvas.grid_columnconfigure(0, weight=1)
-# Set grid_propagate to False to allow 5-by-5 buttons resizing later
-frame_canvas.grid_propagate(False)
+#indicating which version
+onresized = Image.open(".venv/images/isScarlet.png").resize((150,100))
+on = ImageTk.PhotoImage(onresized)
+offresized = Image.open(".venv/images/isViolet.png").resize((150,100))
+off = ImageTk.PhotoImage(offresized)
+on_button = tk.Button(app, image=on, bd=0, command=switch)
+on_button.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
+violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
+#save and load buttons
+save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.S, tk.E, tk.W))
+load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+#level caps menu
+clicked = tk.StringVar()
+clicked.set(LevelCaps[0])
+drop = tk.OptionMenu(app, clicked, *LevelCaps)
+drop.grid(row=0, column=6, sticky=(tk.N, tk.S, tk.E, tk.W))
 
-# Add a canvas in that frame
-canvas = tk.Canvas(frame_canvas, bg="yellow")
-canvas.grid(row=0, column=0, sticky="news")
 
-# Link a scrollbar to the canvas
-vsb = tk.Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)
-vsb.grid(row=0, column=1, sticky='ns')
-canvas.configure(yscrollcommand=vsb.set)
 nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
 for r in range(4):
     for c in range(8):
         index = 8*r + c
-        nodes[r][c] = Node(index).grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
-canvas.config(scrollregion=canvas.bbox("all"))
+        nodes[r][c] = Node(index).grid(row=r+1, column=c+1, sticky=(tk.N, tk.S, tk.E, tk.W))
+#intended width = 1382
+#intended height = 864
 app.mainloop()
 
     
 #TODO
 """
-1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter
+1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
 2. Get scrollbar working
 3. Add saving and loading functionality
 4. Download all Pokemon images (COMPLETE)
 5. Input Encounters into csv files
 6. Fix layout to make it look nice and symmetrical
-7. Deal with version exclusives
+7. Deal with version exclusives (Complete)
 8. Add level caps
 """
     
