@@ -1,7 +1,7 @@
-Pokemon,Frequency
-Hoppip, 3
-Fletchling, 3
-Scatterbug, 3
-Tarountula, 3
-Lechonk, 3
-Pawmi, 1
+Pokemon,Frequency,MinLevel,MaxLevel
+Hoppip,3,2,5
+Fletchling,3,2,5
+Scatterbug,3,2,5
+Tarountula,3,2,5
+Lechonk,3,2,5
+Pawmi,1,2,5

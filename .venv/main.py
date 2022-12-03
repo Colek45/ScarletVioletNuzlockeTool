@@ -8,12 +8,16 @@ from PIL import ImageTk, Image
 import random
 from pathlib import Path
 
+#encounter data from https://pokemondb.net/location#tab=loc-paldea
 
 CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
 pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
 Encounters = [] #keeps track of route names
 fileName = [] #keeps track of csv file names
 PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
+LevelCaps = [ 15 , 16 , 17 , 19 , 21 , 24 , 27 , 28 , 30 , 33 , 36 , 42 , 44 , 45 , 48 , 51 , 55 , 56 , 61 , 62 , 63 , 63 , 65 , 67]
+Order =     ["G1","T1","G2","T2","S1","G3","S2","T3","G4","S3","G5","G6","T4","G7","G8","S4","T5","S5","Cl","E4","Ar","Pe","Ne","ST"]
+#G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
 #read list of routes
 path = Path(".venv/csv_files/routes.csv")
@@ -24,7 +28,9 @@ with open(path, newline='') as csvfile:
         fileName.append(row['filename'])
         
 def rollEncounter(route, controller):
-    PokemonChoices = csvreader.getPokemon(route)
+    pair = csvreader.getPokemon(route)
+    PokemonChoices = pair[0]
+    PokemonLevels = pair[1]
     randomChoice = "Unknown"
     #print(PokemonChoices)
     
@@ -233,6 +239,7 @@ app.mainloop()
 5. Input Encounters into csv files
 6. Fix layout to make it look nice and symmetrical
 7. Deal with version exclusives
+8. Add level caps
 """
     
         
