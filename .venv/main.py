@@ -258,7 +258,7 @@ load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 2
 clicked = tk.StringVar()
 clicked.set(LevelCaps[0])
 drop = tk.OptionMenu(app, clicked, *LevelCaps)
-drop.grid(row=0, column=6, sticky=(tk.N, tk.S, tk.E, tk.W))
+drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
 
 
 nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
