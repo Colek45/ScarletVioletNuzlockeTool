@@ -4,7 +4,7 @@ import csvreader
 import csv
 import tkinter as tk
 from tkinter import font as tkfont
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, asksaveasfilename
 from PIL import ImageTk, Image  
 import random
 from pathlib import Path
@@ -229,12 +229,14 @@ def switch():
         isScarlet = True
         
 def save():
-    file = asksaveasfile(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
+    file = asksaveasfilename(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     with open(file, 'w', newline='') as f:
-        f.writerow(['Pokemon','Route'])
+        header=['Pokemon','Route']
+        writer = csv.DictWriter(f, fieldnames=header)
+        writer.writeheader()
         for pair in PkmnRoutePairs:
-            f.writerow(pair[0],pair[1])
-
+            writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1]})
+            
 def load():
     print("We need to implement this")
         
