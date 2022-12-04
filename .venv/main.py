@@ -19,7 +19,7 @@ PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
 LevelCaps = [] #keeps track of level caps
 scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
 violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
-currentLevelCap=15
+currentLevelCap= 15
 isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
@@ -274,13 +274,13 @@ app.mainloop()
 #TODO
 """
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
-2. Get scrollbar working
-3. Add saving and loading functionality
+2. Get scrollbar working (maybe) OR add resolution options [Alpha]
+3. Add saving and loading functionality [Beta]
 4. Download all Pokemon images (COMPLETE)
-5. Input Encounters into csv files
-6. Fix layout to make it look nice and symmetrical
+5. Input Encounters into csv files [Alpha]
+6. Fix layout to make it look nice and symmetrical [Final Release]
 7. Deal with version exclusives (Complete)
-8. Add level caps
+8. Add level caps [Alpha]
 """
     
         
