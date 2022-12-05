@@ -7,6 +7,7 @@ from tkinter import font as tkfont
 from tkinter.filedialog import asksaveasfile
 from PIL import ImageTk, Image  
 import random
+import re
 from pathlib import Path
 
 #encounter data from https://pokemondb.net/location#tab=loc-paldea
@@ -19,17 +20,16 @@ PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
 LevelCaps = [] #keeps track of level caps
 scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
 violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
-currentLevelCap= 15
+global currentLevelCap
 isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
 class LevelCap:
     def __init__(self, StoryEvent, LevelCap):
         self.StoryEvent = StoryEvent
-        self.LevelCap = (LevelCap)
+        self.lc = int(LevelCap)
     def __str__(self) -> str:
-        print(LevelCap)
-        return "Story Event: " + self.StoryEvent + ", Level " + str(LevelCap)
+        return "Story Event: " + self.StoryEvent + ", Level " + str(self.lc)
 
 #read list of routes
 rpath = Path(".venv/csv_files/routes.csv")
@@ -46,6 +46,7 @@ with open(lpath, newline='') as csvfile:
     for row in routeReader:
         se = str(row['Story Event'])
         lc = int(row['Level Cap'])
+        #print(se + ", " + str(lc))
         LevelCaps.append(LevelCap(se, lc))
         
 def rollEncounter(route, controller):
@@ -55,14 +56,14 @@ def rollEncounter(route, controller):
     randomChoice = "Unknown"
     #print(PokemonChoices)
     
-    print(pkmnname)
+    #print(pkmnname)
     noDupes= [*set(PokemonChoices)]
     allCaught = True
     for pkmn in noDupes:
         if (pkmnname.count(pkmn) <= 0): 
             allCaught = False
             break
-    if (allCaught): choice = Pokemon.Pokemon("NOCAPTURE") 
+    if (allCaught or int(min(PokemonLevels)[1]) > currentLevelCap): choice = Pokemon.Pokemon("NOCAPTURE") 
     else:
         while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
@@ -100,7 +101,7 @@ def removePokemon(pokemonName):
     pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
         pkmnname.remove(Pokemon.Pokemon(forms).name)
-    print(pkmnname)
+    #print(pkmnname)
      
 def confirmPokemon(pokemonName, routeName):
     PkmnRoutePairs.append([pokemonName, routeName])
@@ -133,7 +134,7 @@ class RolledEncounter(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
         label.pack(side="top", fill="x", pady=10)
-        print(Pokemon.name)
+        #print(Pokemon.name)
         PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
         resizeImage = PokemonImage.resize((75,75))
         img = ImageTk.PhotoImage(master=self, image=resizeImage)
@@ -145,11 +146,11 @@ class RolledEncounter(tk.Frame):
 
         PokemonName = tk.Label(self, text=Pokemon.name)
         PokemonName.pack()
-
-        successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
-        successfulCapture.pack()
-        failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
-        failedCapture.pack()
+        if (Pokemon.name != "NOCAPTURE"):
+            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
+            successfulCapture.pack()
+            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
+            failedCapture.pack()
         
 class SuccessfulCatch(tk.Frame):
     def __init__(self, parent, controller, Route, Pokemon):
@@ -335,9 +336,12 @@ def save():
 
 def load():
     print("We need to implement this")
-        
- 
-        
+
+def assignLevelCap(lc):
+    global currentLevelCap
+    currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
+    #print(currentLevelCap)
+
 app = tk.Tk()
 app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
 #indicating which version
@@ -355,8 +359,11 @@ load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 2
 #level caps menu
 clicked = tk.StringVar()
 clicked.set(LevelCaps[0])
-drop = tk.OptionMenu(app, clicked, *LevelCaps)
+drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
+
 drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
+#print(int(re.search(r'\d+', clicked.get()[-9:]).group()))
+#testbtn = tk.Button(app, text="Check level cap", command=lambda: assignLevelCap(int(re.search(r'\d+', clicked.get()[-9:]).group()))).grid(row=0, column=8)
 
 
 nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
