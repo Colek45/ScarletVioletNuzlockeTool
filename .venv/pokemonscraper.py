@@ -27,6 +27,12 @@ for row in pokemontables:
             data[cols[0]] = [int(cols[4][:-1]), int(minLevel), int(maxLevel), 1]
         #int(cols[4][:-1]) removes the percent value and turn the sting into an integer
         #this allows for averaging as the next step
+f = open('SP5.csv', 'w')
+f.write('Pokemon, Frequency, MinLevel, MaxLevel\n')
+
 for key in data:
     data[key][0] = round(data[key][0]/data[key][3], 2)
-    print(key + ': ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + ', ' + str(data[key][3]))
+    f.write(key + ', ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + '\n')
+f.close()
+
+
