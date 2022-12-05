@@ -1,6 +1,6 @@
 Pokemon,Frequency,MinLevel,MaxLevel
-Dugtrio
-Magneton
+Dugtrio,20,26,40
+Magneton,14,30,60
 Haunter
 Hypno
 Magikarp
@@ -42,7 +42,6 @@ Deino
 Pyroar
 Gogoat
 Gumshoos
-Lycanroc
 Lycanroc
 Mudbray
 Mudsdale

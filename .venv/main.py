@@ -418,6 +418,7 @@ app.mainloop()
 7. Deal with version exclusives (COMPLETE)
 8. Add level caps (COMPLETE)
 9. Replace Cortondo with starter picker (COMPLETE)
+10. Manual inputs for Alfornada Cavern (COMPLETE), Dalizapa Passage, and Socarrat Trail
 """
     
         
