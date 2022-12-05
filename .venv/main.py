@@ -4,7 +4,8 @@ import csvreader
 import csv
 import tkinter as tk
 from tkinter import font as tkfont
-from tkinter.filedialog import asksaveasfile, asksaveasfilename
+from tkinter.filedialog import asksaveasfilename
+from operator import itemgetter
 from PIL import ImageTk, Image  
 import random
 import re
@@ -50,9 +51,10 @@ with open(lpath, newline='') as csvfile:
         LevelCaps.append(LevelCap(se, lc))
         
 def rollEncounter(route, controller):
-    pair = csvreader.getPokemon(route)
-    PokemonChoices = pair[0]
-    PokemonLevels = pair[1]
+    csvdata = csvreader.getPokemon(route)
+    PokemonChoices = csvdata[0]
+    PokemonLevels = csvdata[1]
+    minLevel = csvdata[2]
     randomChoice = "Unknown"
     #print(PokemonChoices)
     
@@ -63,7 +65,7 @@ def rollEncounter(route, controller):
         if (pkmnname.count(pkmn) <= 0): 
             allCaught = False
             break
-    if (allCaught or int(min(PokemonLevels)[1]) > currentLevelCap): choice = Pokemon.Pokemon("NOCAPTURE") 
+    if (allCaught or minLevel > currentLevelCap): choice = Pokemon.Pokemon("NOCAPTURE") 
     else:
         while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
@@ -86,7 +88,7 @@ def rollEncounter(route, controller):
     
     index = fileName.index(route)
     Route = Encounters[index]
-    confirmPokemon(choice.name, route)
+    confirmPokemon(choice.name, route, "Rolled")
     controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
@@ -103,8 +105,18 @@ def removePokemon(pokemonName):
         pkmnname.remove(Pokemon.Pokemon(forms).name)
     #print(pkmnname)
      
-def confirmPokemon(pokemonName, routeName):
-    PkmnRoutePairs.append([pokemonName, routeName])
+def confirmPokemon(pokemonName, routeName, condition):
+    duplicate = False
+    index = 0
+    for i, item in enumerate(PkmnRoutePairs):
+        if item[0] == pokemonName:
+            duplicate = True
+            index = i
+            break
+    if duplicate:
+        PkmnRoutePairs[index] = ([pokemonName, routeName, condition])
+    else:
+        PkmnRoutePairs.append([pokemonName, routeName, condition])
 
 #Pokemon has yet to be rolled
 class UnknownPokemon(tk.Frame):
@@ -147,9 +159,9 @@ class RolledEncounter(tk.Frame):
         PokemonName = tk.Label(self, text=Pokemon.name)
         PokemonName.pack()
         if (Pokemon.name != "NOCAPTURE"):
-            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
+            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Caught"), controller.show_frame("SuccessfulCatch")])
             successfulCapture.pack()
-            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
+            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), confirmPokemon(Pokemon, Route, "Failed"), controller.show_frame("FailedCatch")])
             failedCapture.pack()
         
 class SuccessfulCatch(tk.Frame):
@@ -219,11 +231,11 @@ class UnknownStarter(tk.Frame):
 
         PokemonName = tk.Label(self, text="Select a starter Pokemon")
         PokemonName.pack()
-        sprigButton = tk.Button(self, text="Sprigatito", command=lambda: controller.show_frame("SprigatitoStarter"))
+        sprigButton = tk.Button(self, text="Sprigatito", command=lambda: [PkmnRoutePairs.append(["Sprigatito", "Starter", "Starter"]), controller.show_frame("SprigatitoStarter")])
         sprigButton.pack()
-        cocoButton = tk.Button(self, text="Fuecoco", command=lambda: controller.show_frame("FuecocoStarter"))
+        cocoButton = tk.Button(self, text="Fuecoco", command=lambda: [PkmnRoutePairs.append(["Fuecoco", "Starter", "Starter"]), controller.show_frame("FuecocoStarter")])
         cocoButton.pack()
-        quaxButton = tk.Button(self, text="Quaxly", command=lambda: controller.show_frame("QuaxlyStarter"))
+        quaxButton = tk.Button(self, text="Quaxly", command=lambda: [PkmnRoutePairs.append(["Quaxly", "Starter", "Starter"]), controller.show_frame("QuaxlyStarter")])
         quaxButton.pack()
         
 class SprigatitoStarter(tk.Frame):
@@ -339,11 +351,11 @@ def assignLevelCap(lc):
 def save():
     file = asksaveasfilename(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     with open(file, 'w', newline='') as f:
-        header=['Pokemon','Route']
+        header=['Pokemon','Route','Condition']
         writer = csv.DictWriter(f, fieldnames=header)
         writer.writeheader()
-        for pair in PkmnRoutePairs:
-            writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1]})
+        for tuple in PkmnRoutePairs:
+            writer.writerow({'Pokemon' : tuple[0], 'Route' : tuple[1], 'Condition' : tuple[2]})
             
 def load():
     with open("SaveData.csv", 'r', newline='') as reader:
@@ -374,9 +386,10 @@ load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 2
 #level caps menu
 clicked = tk.StringVar()
 clicked.set(LevelCaps[0])
+currentLevelCap=15
 drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
 
-drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
+drop.grid(row=0, column=7)
 #print(int(re.search(r'\d+', clicked.get()[-9:]).group()))
 #testbtn = tk.Button(app, text="Check level cap", command=lambda: assignLevelCap(int(re.search(r'\d+', clicked.get()[-9:]).group()))).grid(row=0, column=8)
 
@@ -398,13 +411,13 @@ app.mainloop()
 """
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
 2. Add resolution options [Alpha]
-3. Add saving and loading functionality [Beta]
+3. Add saving and loading functionality (Saving complete, loading is still a WIP)
 4. Download all Pokemon images (COMPLETE)
 5. Input Encounters into csv files [Alpha]
 6. Fix layout to make it look nice and symmetrical [Final Release]
-7. Deal with version exclusives (Complete)
-8. Add level caps [Alpha]
-9. Replace Cortondo with starter picker
+7. Deal with version exclusives (COMPLETE)
+8. Add level caps (COMPLETE)
+9. Replace Cortondo with starter picker (COMPLETE)
 """
     
         
