@@ -10,22 +10,25 @@ pokemontables = soup.find_all('tr')
 for row in pokemontables:
     cols = row.find_all('td')
     cols = [ele.text.strip() for ele in cols]
+    
     #Doesn't parse empty rows
     if len(cols) != 0:
+        pokemonName = row.find('a')
+        pokemonName = pokemonName.text.strip()
         #If the pokemon is in the dict
-        if cols[0] in data:
-            data[cols[0]][3] += 1
-            data[cols[0]][0] += int(cols[4][:-1])
+        if pokemonName in data:
+            data[pokemonName][3] += 1
+            data[pokemonName][0] += int(cols[4][:-1])
             minLevel, maxLevel = [int(result) for result in cols[5].split('-')]
             #Find the highest max and the lowest min
-            if data[cols[0]][1] > minLevel:
-                data[cols[0]][1] = minLevel
-            if data[cols[0]][2] < maxLevel:
-                data[cols[0]][2] = maxLevel
+            if data[pokemonName][1] > minLevel:
+                data[pokemonName][1] = minLevel
+            if data[pokemonName][2] < maxLevel:
+                data[pokemonName][2] = maxLevel
         #If the pokemon is not in the dict
         else:
             minLevel, maxLevel = cols[5].split('-')
-            data[cols[0]] = [int(cols[4][:-1]), int(minLevel), int(maxLevel), 1]
+            data[pokemonName] = [int(cols[4][:-1]), int(minLevel), int(maxLevel), 1]
         #int(cols[4][:-1]) removes the percent value and turn the sting into an integer
         #this allows for averaging as the next step
 f = open('SP5.csv', 'w')
@@ -33,7 +36,7 @@ f.write('Pokemon, Frequency, MinLevel, MaxLevel\n')
 
 for key in data:
     data[key][0] = data[key][0]//data[key][3]
-    f.write(unidecode(key.split(' ')[0]) + ', ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + '\n')
+    f.write(unidecode(key) + ', ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + '\n')
 f.close()
 
 
