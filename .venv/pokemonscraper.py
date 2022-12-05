@@ -1,0 +1,32 @@
+import requests
+from bs4 import BeautifulSoup
+
+page = requests.get("https://pokemondb.net/location/paldea-south-province-area-five")
+soup = BeautifulSoup(page.content, 'html.parser')
+data = {}
+
+pokemontables = soup.find_all('tr')
+for row in pokemontables:
+    cols = row.find_all('td')
+    cols = [ele.text.strip() for ele in cols]
+    #Doesn't parse empty rows
+    if len(cols) != 0:
+        #If the pokemon is not in the dict
+        if cols[0] in data:
+            data[cols[0]][3] += 1
+            data[cols[0]][0] += int(cols[4][:-1])
+            minLevel, maxLevel = [int(result) for result in cols[5].split('-')]
+            #Find the highest max and the lowest min
+            if data[cols[0]][1] > minLevel:
+                data[cols[0]][1] = minLevel
+            if data[cols[0]][2] < maxLevel:
+                data[cols[0]][2] = maxLevel
+        #If the pokemon is not in the dict
+        else:
+            minLevel, maxLevel = cols[5].split('-')
+            data[cols[0]] = [int(cols[4][:-1]), int(minLevel), int(maxLevel), 1]
+        #int(cols[4][:-1]) removes the percent value and turn the sting into an integer
+        #this allows for averaging as the next step
+for key in data:
+    data[key][0] = round(data[key][0]/data[key][3], 2)
+    print(key + ': ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + ', ' + str(data[key][3]))
