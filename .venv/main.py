@@ -4,7 +4,7 @@ import csvreader
 import csv
 import tkinter as tk
 from tkinter import font as tkfont
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, asksaveasfilename
 from PIL import ImageTk, Image  
 import random
 import re
@@ -317,6 +317,10 @@ class Node(tk.Frame):
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
+    
+    def restore_pokemon(self, route, pokemonName):
+        confirmPokemon(pokemonName, route)
+        self.show_frame("RolledEncounter")
 
 def switch():
     global isScarlet
@@ -333,17 +337,26 @@ def assignLevelCap(lc):
     #print(currentLevelCap)
 
 def save():
-    file = asksaveasfile(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
+    file = asksaveasfilename(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     with open(file, 'w', newline='') as f:
-        f.writerow(['Pokemon','Route'])
+        header=['Pokemon','Route']
+        writer = csv.DictWriter(f, fieldnames=header)
+        writer.writeheader()
         for pair in PkmnRoutePairs:
-            f.writerow(pair[0],pair[1])
-
+            writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1]})
+            
 def load():
-    print("We need to implement this")
+    with open("SaveData.csv", 'r', newline='') as reader:
+        read = csv.DictReader(reader)
+        for row in read:
+            index = fileName.index(row['Route'])
+            r = int(index/8)
+            c = index%8
+            nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'])
 
-
-
+        
+ 
+        
 app = tk.Tk()
 app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
 #indicating which version
@@ -367,14 +380,17 @@ drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
 #print(int(re.search(r'\d+', clicked.get()[-9:]).group()))
 #testbtn = tk.Button(app, text="Check level cap", command=lambda: assignLevelCap(int(re.search(r'\d+', clicked.get()[-9:]).group()))).grid(row=0, column=8)
 
-
 nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
 for r in range(4):
     for c in range(8):
         index = 8*r + c
-        nodes[r][c] = Node(index).grid(row=r+1, column=c+1, sticky=(tk.N, tk.S, tk.E, tk.W))
+        nodes[r][c] = Node(index).grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
 #intended width = 1382
 #intended height = 864
+for r in range(5):
+    app.grid_rowconfigure(r, weight=1)
+for c in range(8):
+    app.grid_columnconfigure(c, weight=1)
 app.mainloop()
 
     
