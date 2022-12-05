@@ -326,7 +326,12 @@ def switch():
     else:
         on_button.config(image = on)
         isScarlet = True
-        
+
+def assignLevelCap(lc):
+    global currentLevelCap
+    currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
+    #print(currentLevelCap)
+
 def save():
     file = asksaveasfile(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     with open(file, 'w', newline='') as f:
@@ -337,10 +342,7 @@ def save():
 def load():
     print("We need to implement this")
 
-def assignLevelCap(lc):
-    global currentLevelCap
-    currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
-    #print(currentLevelCap)
+
 
 app = tk.Tk()
 app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
