@@ -23,6 +23,14 @@ currentLevelCap= 15
 isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
+class LevelCap:
+    def __init__(self, StoryEvent, LevelCap):
+        self.StoryEvent = StoryEvent
+        self.LevelCap = (LevelCap)
+    def __str__(self) -> str:
+        print(LevelCap)
+        return "Story Event: " + self.StoryEvent + ", Level " + str(LevelCap)
+
 #read list of routes
 rpath = Path(".venv/csv_files/routes.csv")
 with open(rpath, newline='') as csvfile:
@@ -36,7 +44,9 @@ lpath = Path(".venv/csv_files/levelcaps.csv")
 with open(lpath, newline='') as csvfile:
     routeReader = csv.DictReader(csvfile)
     for row in routeReader:
-        LevelCaps.append(row)
+        se = str(row['Story Event'])
+        lc = int(row['Level Cap'])
+        LevelCaps.append(LevelCap(se, lc))
         
 def rollEncounter(route, controller):
     pair = csvreader.getPokemon(route)
