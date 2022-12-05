@@ -11,7 +11,7 @@ for row in pokemontables:
     cols = [ele.text.strip() for ele in cols]
     #Doesn't parse empty rows
     if len(cols) != 0:
-        #If the pokemon is not in the dict
+        #If the pokemon is in the dict
         if cols[0] in data:
             data[cols[0]][3] += 1
             data[cols[0]][0] += int(cols[4][:-1])
