@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from unidecode import unidecode
 
 page = requests.get("https://pokemondb.net/location/paldea-south-province-area-five")
 soup = BeautifulSoup(page.content, 'html.parser')
@@ -32,7 +33,7 @@ f.write('Pokemon, Frequency, MinLevel, MaxLevel\n')
 
 for key in data:
     data[key][0] = data[key][0]//data[key][3]
-    f.write(key.split(' ')[0] + ', ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + '\n')
+    f.write(unidecode(key.split(' ')[0]) + ', ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + '\n')
 f.close()
 
 
