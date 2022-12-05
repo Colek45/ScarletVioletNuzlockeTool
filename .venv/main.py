@@ -7,6 +7,7 @@ from tkinter import font as tkfont
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
 from PIL import ImageTk, Image  
 import random
+import re
 from pathlib import Path
 
 #encounter data from https://pokemondb.net/location#tab=loc-paldea
@@ -19,9 +20,16 @@ PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
 LevelCaps = [] #keeps track of level caps
 scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
 violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
-currentLevelCap= 15
+global currentLevelCap
 isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
+
+class LevelCap:
+    def __init__(self, StoryEvent, LevelCap):
+        self.StoryEvent = StoryEvent
+        self.lc = int(LevelCap)
+    def __str__(self) -> str:
+        return "Story Event: " + self.StoryEvent + ", Level " + str(self.lc)
 
 #read list of routes
 rpath = Path(".venv/csv_files/routes.csv")
@@ -36,7 +44,10 @@ lpath = Path(".venv/csv_files/levelcaps.csv")
 with open(lpath, newline='') as csvfile:
     routeReader = csv.DictReader(csvfile)
     for row in routeReader:
-        LevelCaps.append(row)
+        se = str(row['Story Event'])
+        lc = int(row['Level Cap'])
+        #print(se + ", " + str(lc))
+        LevelCaps.append(LevelCap(se, lc))
         
 def rollEncounter(route, controller):
     pair = csvreader.getPokemon(route)
@@ -45,14 +56,14 @@ def rollEncounter(route, controller):
     randomChoice = "Unknown"
     #print(PokemonChoices)
     
-    print(pkmnname)
+    #print(pkmnname)
     noDupes= [*set(PokemonChoices)]
     allCaught = True
     for pkmn in noDupes:
         if (pkmnname.count(pkmn) <= 0): 
             allCaught = False
             break
-    if (allCaught): choice = Pokemon.Pokemon("NOCAPTURE") 
+    if (allCaught or int(min(PokemonLevels)[1]) > currentLevelCap): choice = Pokemon.Pokemon("NOCAPTURE") 
     else:
         while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
@@ -90,7 +101,7 @@ def removePokemon(pokemonName):
     pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
         pkmnname.remove(Pokemon.Pokemon(forms).name)
-    print(pkmnname)
+    #print(pkmnname)
      
 def confirmPokemon(pokemonName, routeName):
     PkmnRoutePairs.append([pokemonName, routeName])
@@ -123,7 +134,7 @@ class RolledEncounter(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
         label.pack(side="top", fill="x", pady=10)
-        print(Pokemon.name)
+        #print(Pokemon.name)
         PokemonImage = Image.open(".venv/images/" + Pokemon.name + ".png")
         resizeImage = PokemonImage.resize((75,75))
         img = ImageTk.PhotoImage(master=self, image=resizeImage)
@@ -135,11 +146,11 @@ class RolledEncounter(tk.Frame):
 
         PokemonName = tk.Label(self, text=Pokemon.name)
         PokemonName.pack()
-
-        successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
-        successfulCapture.pack()
-        failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
-        failedCapture.pack()
+        if (Pokemon.name != "NOCAPTURE"):
+            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
+            successfulCapture.pack()
+            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
+            failedCapture.pack()
         
 class SuccessfulCatch(tk.Frame):
     def __init__(self, parent, controller, Route, Pokemon):
@@ -191,7 +202,84 @@ class FailedCatch(tk.Frame):
 #window.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
 
 
+class UnknownStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Unknown.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
 
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Select a starter Pokemon")
+        PokemonName.pack()
+        sprigButton = tk.Button(self, text="Sprigatito", command=lambda: controller.show_frame("SprigatitoStarter"))
+        sprigButton.pack()
+        cocoButton = tk.Button(self, text="Fuecoco", command=lambda: controller.show_frame("FuecocoStarter"))
+        cocoButton.pack()
+        quaxButton = tk.Button(self, text="Quaxly", command=lambda: controller.show_frame("QuaxlyStarter"))
+        quaxButton.pack()
+        
+class SprigatitoStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Sprigatito.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Sprigatito")
+        PokemonName.pack()
+        
+class FuecocoStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Fuecoco.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Fuecoco")
+        PokemonName.pack()
+        
+class QuaxlyStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Quaxly.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Quaxly")
+        PokemonName.pack()
+        
 
 
 class Node(tk.Frame):
@@ -205,15 +293,26 @@ class Node(tk.Frame):
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
         self.frames = {}
-        self.frames["UnknownPokemon"] = UnknownPokemon(parent=self.container, Route=Route, controller=self)
-        #self.frames["RolledEncounter"] = RolledEncounter(parent=container, Route=Route, Pokemon=pkmn, controller=self)
-        #self.frames["SuccessfulCatch"] = SuccessfulCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
-        #self.frames["FailedCatch"] = FailedCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
-        self.frames["UnknownPokemon"].grid(row=0, column=0, sticky="nsew")
-        #self.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
-        #self.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
-        #self.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
-        self.show_frame("UnknownPokemon")
+        if Route == "Starter":
+            self.frames["UnknownStarter"] = UnknownStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["SprigatitoStarter"] = SprigatitoStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["FuecocoStarter"] = FuecocoStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["QuaxlyStarter"] = QuaxlyStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["UnknownStarter"].grid(row=0, column=0, sticky="nsew")
+            self.frames["SprigatitoStarter"].grid(row=0, column=0, sticky="nsew")
+            self.frames["FuecocoStarter"].grid(row=0, column=0, sticky="nsew")
+            self.frames["QuaxlyStarter"].grid(row=0, column=0, sticky="nsew")
+            self.show_frame("UnknownStarter")
+        else: 
+            self.frames["UnknownPokemon"] = UnknownPokemon(parent=self.container, Route=Route, controller=self)
+            #self.frames["RolledEncounter"] = RolledEncounter(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+            #self.frames["SuccessfulCatch"] = SuccessfulCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+            #self.frames["FailedCatch"] = FailedCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+            self.frames["UnknownPokemon"].grid(row=0, column=0, sticky="nsew")
+            #self.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
+            #self.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
+            #self.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
+            self.show_frame("UnknownPokemon")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
@@ -231,7 +330,12 @@ def switch():
     else:
         on_button.config(image = on)
         isScarlet = True
-        
+
+def assignLevelCap(lc):
+    global currentLevelCap
+    currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
+    #print(currentLevelCap)
+
 def save():
     file = asksaveasfilename(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     with open(file, 'w', newline='') as f:
@@ -270,8 +374,11 @@ load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 2
 #level caps menu
 clicked = tk.StringVar()
 clicked.set(LevelCaps[0])
-drop = tk.OptionMenu(app, clicked, *LevelCaps)
+drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
+
 drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
+#print(int(re.search(r'\d+', clicked.get()[-9:]).group()))
+#testbtn = tk.Button(app, text="Check level cap", command=lambda: assignLevelCap(int(re.search(r'\d+', clicked.get()[-9:]).group()))).grid(row=0, column=8)
 
 nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
 for r in range(4):
@@ -290,13 +397,14 @@ app.mainloop()
 #TODO
 """
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
-2. Get scrollbar working (maybe) OR add resolution options [Alpha]
+2. Add resolution options [Alpha]
 3. Add saving and loading functionality [Beta]
 4. Download all Pokemon images (COMPLETE)
 5. Input Encounters into csv files [Alpha]
 6. Fix layout to make it look nice and symmetrical [Final Release]
 7. Deal with version exclusives (Complete)
 8. Add level caps [Alpha]
+9. Replace Cortondo with starter picker
 """
     
         
