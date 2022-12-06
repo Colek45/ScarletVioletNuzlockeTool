@@ -41,9 +41,10 @@ with open(lpath, newline='') as csvfile:
         
 def rollEncounter(route, controller):
     global currentLevelCap
-    pair = csvreader.getPokemon(route)
-    PokemonChoices = pair[0]
-    PokemonLevels = pair[1]
+    tuple = csvreader.getPokemon(route)
+    PokemonChoices = tuple[0]
+    PokemonLevels = tuple[1]
+    minlevel = tuple[2]
     randomChoice = "Unknown"
     #print(PokemonChoices)
     
@@ -54,7 +55,7 @@ def rollEncounter(route, controller):
         if (pkmnname.count(pkmn) <= 0): 
             allCaught = False
             break
-    if (allCaught): choice = Pokemon.Pokemon("NOCAPTURE") 
+    if (allCaught or minlevel > currentLevelCap): choice = Pokemon.Pokemon("NOCAPTURE") 
     else:
         while (randomChoice in pkmnname or randomChoice == "Unknown"):
             randomChoice = random.choice(PokemonChoices)
@@ -137,11 +138,12 @@ class RolledEncounter(tk.Frame):
 
         PokemonName = tk.Label(self, text=Pokemon.name)
         PokemonName.pack()
-
-        successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
-        successfulCapture.pack()
-        failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
-        failedCapture.pack()
+        
+        if(Pokemon.name != "NOCAPTURE"):
+            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
+            successfulCapture.pack()
+            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
+            failedCapture.pack()
         
 class SuccessfulCatch(tk.Frame):
     def __init__(self, parent, controller, Route, Pokemon):
