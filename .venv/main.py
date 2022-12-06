@@ -7,6 +7,7 @@ from tkinter import font as tkfont
 from tkinter.filedialog import asksaveasfile, asksaveasfilename
 from PIL import ImageTk, Image  
 import random
+import re
 from pathlib import Path
 
 #encounter data from https://pokemondb.net/location#tab=loc-paldea
@@ -19,7 +20,7 @@ PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
 LevelCaps = [] #keeps track of level caps
 scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
 violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
-currentLevelCap= 15
+global currentLevelCap
 isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
@@ -39,6 +40,7 @@ with open(lpath, newline='') as csvfile:
         LevelCaps.append(row)
         
 def rollEncounter(route, controller):
+    global currentLevelCap
     pair = csvreader.getPokemon(route)
     PokemonChoices = pair[0]
     PokemonLevels = pair[1]
@@ -341,6 +343,10 @@ def load():
             c = index%8
             nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'])
 
+def assignLevelCap(lc):
+    global currentLevelCap
+    currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
+    print(currentLevelCap)
         
  
         
@@ -361,7 +367,8 @@ load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 2
 #level caps menu
 clicked = tk.StringVar()
 clicked.set(LevelCaps[0])
-drop = tk.OptionMenu(app, clicked, *LevelCaps)
+currentLevelCap = 15
+drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
 drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
 
 nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
@@ -384,10 +391,10 @@ app.mainloop()
 2. Get scrollbar working (maybe) OR add resolution options [Alpha]
 3. Add saving and loading functionality [Beta]
 4. Download all Pokemon images (COMPLETE)
-5. Input Encounters into csv files [Alpha]
+5. Input Encounters into csv files (COMPLETE)
 6. Fix layout to make it look nice and symmetrical [Final Release]
-7. Deal with version exclusives (Complete)
-8. Add level caps [Alpha]
+7. Deal with version exclusives (COMPLETE)
+8. Add level caps (COMPLETE)
 """
     
         

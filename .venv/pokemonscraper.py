@@ -4,7 +4,7 @@ from unidecode import unidecode
 import csv
 from pathlib import Path
 
-page = requests.get("https://pokemondb.net/location/paldea-south-province-area-six")
+page = requests.get("https://pokemondb.net/location/paldea-west-province-area-three")
 soup = BeautifulSoup(page.content, 'html.parser')
 data = {}
 
@@ -28,17 +28,17 @@ for row in pokemontables:
             if data[pokemonName][2] < maxLevel:
                 data[pokemonName][2] = maxLevel
         #If the pokemon is not in the dict
-        else:
+        elif pokemonName != "Gimmighoul":
             minLevel, maxLevel = cols[5].split('-')
             data[pokemonName] = [int(cols[4][:-1]), int(minLevel), int(maxLevel), 1]
         #int(cols[4][:-1]) removes the percent value and turn the sting into an integer
         #this allows for averaging as the next step
 f = open('output.csv', 'w')
-f.write('Pokemon, Frequency, MinLevel, MaxLevel\n')
+f.write('Pokemon,Frequency,MinLevel,MaxLevel\n')
 
 
 PokemonList = []
-path = Path(".venv/csv_files/" + "SP6" + ".csv")
+path = Path(".venv/csv_files/WP3.csv")
 with open(path, newline='') as csvfile:
     Pokereader = csv.DictReader(csvfile)
     for row in Pokereader:

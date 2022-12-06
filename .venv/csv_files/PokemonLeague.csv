@@ -1,6 +1,6 @@
 Pokemon,Frequency,MinLevel,MaxLevel
-Igglybuff
-Happiny
-Lechonk
-Tarountula
-Tandemaus
+Igglybuff,60,5,9
+Happiny,1,5,15
+Lechonk,60,2,18
+Tarountula,60,2,18
+Tandemaus,70,7,14
