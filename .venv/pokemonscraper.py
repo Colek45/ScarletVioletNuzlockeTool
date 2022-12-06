@@ -4,7 +4,7 @@ from unidecode import unidecode
 import csv
 from pathlib import Path
 
-page = requests.get("https://pokemondb.net/location/paldea-south-province-area-five")
+page = requests.get("https://pokemondb.net/location/paldea-south-province-area-six")
 soup = BeautifulSoup(page.content, 'html.parser')
 data = {}
 
@@ -33,12 +33,12 @@ for row in pokemontables:
             data[pokemonName] = [int(cols[4][:-1]), int(minLevel), int(maxLevel), 1]
         #int(cols[4][:-1]) removes the percent value and turn the sting into an integer
         #this allows for averaging as the next step
-f = open('SP5.csv', 'w')
+f = open('output.csv', 'w')
 f.write('Pokemon, Frequency, MinLevel, MaxLevel\n')
 
 
 PokemonList = []
-path = Path(".venv/csv_files/" + "SP5" + ".csv")
+path = Path(".venv/csv_files/" + "SP6" + ".csv")
 with open(path, newline='') as csvfile:
     Pokereader = csv.DictReader(csvfile)
     for row in Pokereader:

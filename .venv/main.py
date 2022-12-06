@@ -222,6 +222,9 @@ class Node(tk.Frame):
     def restore_pokemon(self, route, pokemonName):
         confirmPokemon(pokemonName, route)
         self.show_frame("RolledEncounter")
+        
+    def getNode(self):
+        return self
 
 def switch():
     global isScarlet
