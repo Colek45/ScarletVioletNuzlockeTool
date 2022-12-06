@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 from unidecode import unidecode
+import csv
+from pathlib import Path
 
 page = requests.get("https://pokemondb.net/location/paldea-south-province-area-five")
 soup = BeautifulSoup(page.content, 'html.parser')
@@ -34,9 +36,18 @@ for row in pokemontables:
 f = open('SP5.csv', 'w')
 f.write('Pokemon, Frequency, MinLevel, MaxLevel\n')
 
+
+PokemonList = []
+path = Path(".venv/csv_files/" + "SP5" + ".csv")
+with open(path, newline='') as csvfile:
+    Pokereader = csv.DictReader(csvfile)
+    for row in Pokereader:
+        PokemonList.append(row['Pokemon'])
+        
 for key in data:
     data[key][0] = data[key][0]//data[key][3]
-    f.write(unidecode(key) + ', ' + str(data[key][0]) + ', ' + str(data[key][1]) + ', ' + str(data[key][2]) + '\n')
+    if (key in PokemonList):
+        f.write(unidecode(key) + ',' + str(data[key][0]) + ',' + str(data[key][1]) + ',' + str(data[key][2]) + '\n')
 f.close()
 
 
