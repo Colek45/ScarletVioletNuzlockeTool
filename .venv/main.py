@@ -191,7 +191,84 @@ class FailedCatch(tk.Frame):
 #window.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
 
 
+class UnknownStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Unknown.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
 
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Select a starter Pokemon")
+        PokemonName.pack()
+        sprigButton = tk.Button(self, text="Sprigatito", command=lambda: [PkmnRoutePairs.append(["Sprigatito", "Starter", "Starter"]), controller.show_frame("SprigatitoStarter")])
+        sprigButton.pack()
+        cocoButton = tk.Button(self, text="Fuecoco", command=lambda: [PkmnRoutePairs.append(["Fuecoco", "Starter", "Starter"]), controller.show_frame("FuecocoStarter")])
+        cocoButton.pack()
+        quaxButton = tk.Button(self, text="Quaxly", command=lambda: [PkmnRoutePairs.append(["Quaxly", "Starter", "Starter"]), controller.show_frame("QuaxlyStarter")])
+        quaxButton.pack()
+        
+class SprigatitoStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Sprigatito.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Sprigatito")
+        PokemonName.pack()
+        
+class FuecocoStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Fuecoco.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Fuecoco")
+        PokemonName.pack()
+        
+class QuaxlyStarter(tk.Frame):
+    def __init__(self, parent, controller, Route):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text=Route, font=controller.title_font, wraplength=200)
+        label.pack(side="top", fill="x", pady=10)
+        UnknownImage = Image.open(".venv/images/Quaxly.png")
+        resizeImage = UnknownImage.resize((75,75))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
+
+        PokemonName = tk.Label(self, text="Quaxly")
+        PokemonName.pack()
+        
 
 
 class Node(tk.Frame):
@@ -205,15 +282,26 @@ class Node(tk.Frame):
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
         self.frames = {}
-        self.frames["UnknownPokemon"] = UnknownPokemon(parent=self.container, Route=Route, controller=self)
-        #self.frames["RolledEncounter"] = RolledEncounter(parent=container, Route=Route, Pokemon=pkmn, controller=self)
-        #self.frames["SuccessfulCatch"] = SuccessfulCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
-        #self.frames["FailedCatch"] = FailedCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
-        self.frames["UnknownPokemon"].grid(row=0, column=0, sticky="nsew")
-        #self.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
-        #self.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
-        #self.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
-        self.show_frame("UnknownPokemon")
+        if Route == "Starter":
+            self.frames["UnknownStarter"] = UnknownStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["SprigatitoStarter"] = SprigatitoStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["FuecocoStarter"] = FuecocoStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["QuaxlyStarter"] = QuaxlyStarter(parent=self.container, Route=Route, controller=self)
+            self.frames["UnknownStarter"].grid(row=0, column=0, sticky="nsew")
+            self.frames["SprigatitoStarter"].grid(row=0, column=0, sticky="nsew")
+            self.frames["FuecocoStarter"].grid(row=0, column=0, sticky="nsew")
+            self.frames["QuaxlyStarter"].grid(row=0, column=0, sticky="nsew")
+            self.show_frame("UnknownStarter")
+        else: 
+            self.frames["UnknownPokemon"] = UnknownPokemon(parent=self.container, Route=Route, controller=self)
+            #self.frames["RolledEncounter"] = RolledEncounter(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+            #self.frames["SuccessfulCatch"] = SuccessfulCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+            #self.frames["FailedCatch"] = FailedCatch(parent=container, Route=Route, Pokemon=pkmn, controller=self)
+            self.frames["UnknownPokemon"].grid(row=0, column=0, sticky="nsew")
+            #self.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
+            #self.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
+            #self.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
+            self.show_frame("UnknownPokemon")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
