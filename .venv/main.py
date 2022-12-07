@@ -97,9 +97,9 @@ def removePokemon(pokemonName):
      
 def confirmPokemon(pokemonName, routeName, status):
     if status == "Caught" or status == "Failed":
-        for row in PkmnRoutePairs:
-            if row[0] == pokemonName:
-                row[2] = status
+        for i, row in enumerate(PkmnRoutePairs):
+            if str(row[0]) == str(pokemonName):
+                PkmnRoutePairs[i] = ([PkmnRoutePairs[i][0], PkmnRoutePairs[i][1], status])
                 return
     else:
         PkmnRoutePairs.append([pokemonName, routeName, status])
