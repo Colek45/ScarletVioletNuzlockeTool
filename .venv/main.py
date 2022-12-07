@@ -192,7 +192,7 @@ class FailedCatch(tk.Frame):
         PokemonName.pack()
 
 #window = tk.Tk()
-#window.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
+#window.title("Pokemon Scarlet and Violet Nuzlocke Tool")
 
 
 class UnknownStarter(tk.Frame):
