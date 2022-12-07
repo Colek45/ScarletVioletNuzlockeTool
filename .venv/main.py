@@ -377,7 +377,9 @@ nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
 for r in range(4):
     for c in range(8):
         index = 8*r + c
-        nodes[r][c] = Node(index).grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+        node = Node(index)
+        nodes[r][c] = node
+        nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
 #intended width = 1382
 #intended height = 864
 for r in range(5):
