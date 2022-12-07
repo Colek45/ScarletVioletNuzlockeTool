@@ -78,7 +78,7 @@ def rollEncounter(route, controller):
     
     index = fileName.index(route)
     Route = Encounters[index]
-    confirmPokemon(choice.name, route)
+    confirmPokemon(choice.name, route, "Rolled")
     controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
     controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
@@ -95,8 +95,58 @@ def removePokemon(pokemonName):
         pkmnname.remove(Pokemon.Pokemon(forms).name)
     print(pkmnname)
      
-def confirmPokemon(pokemonName, routeName):
-    PkmnRoutePairs.append([pokemonName, routeName])
+def confirmPokemon(pokemonName, routeName, status):
+    if status == "Caught" or status == "Failed":
+        for row in PkmnRoutePairs:
+            if row[0] == pokemonName:
+                row[2] = status
+                return
+    else:
+        PkmnRoutePairs.append([pokemonName, routeName, status])
+    
+def loadPokemon(pokemonName, routeName, status, controller):
+    choice = Pokemon.Pokemon(pokemonName)
+    choice.setForms(pokemonName)
+    CaughtPokemon.append(choice)
+    pkmnname.append(pokemonName)
+    if (choice.forms.__len__ != 0):
+        for form in choice.forms:
+            tempMon = Pokemon.Pokemon(form)
+            tempMon.setForms(form)
+            CaughtPokemon.append(tempMon)
+            pkmnname.append(form)
+    index = fileName.index(routeName)
+    Route = Encounters[index]
+    if status == "Starter":
+        match pokemonName:
+            case "Sprigatito":
+                controller.frames["SprigatitoStarter"] = FuecocoStarter(parent=controller.container, Route=Route, controller=controller)
+                controller.frames["SprigatitoStarter"].grid(row=0, column=0, sticky="nsew")
+                controller.show_frame("SprigatitoStarter")
+            case "Quaxly":
+                controller.frames["QuaxlyStarter"] = FuecocoStarter(parent=controller.container, Route=Route, controller=controller)
+                controller.frames["QuaxlyStarter"].grid(row=0, column=0, sticky="nsew")
+                controller.show_frame("QuaxlyStarter")
+            case "Fuecoco":
+                controller.frames["FuecocoStarter"] = FuecocoStarter(parent=controller.container, Route=Route, controller=controller)
+                controller.frames["FuecocoStarter"].grid(row=0, column=0, sticky="nsew")
+                controller.show_frame("FuecocoStarter")
+
+    else:
+        controller.frames["RolledEncounter"] = RolledEncounter(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
+        controller.frames["SuccessfulCatch"] = SuccessfulCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
+        controller.frames["FailedCatch"] = FailedCatch(parent=controller.container, Route=Route, Pokemon=choice, controller=controller)
+        controller.frames["RolledEncounter"].grid(row=0, column=0, sticky="nsew")
+        controller.frames["SuccessfulCatch"].grid(row=0, column=0, sticky="nsew")
+        controller.frames["FailedCatch"].grid(row=0, column=0, sticky="nsew")
+        match status:
+            case "Rolled":
+                controller.show_frame("RolledEncounter")
+            case "Caught":
+                controller.show_frame("SuccessfulCatch")
+            case "Failed":
+                controller.show_frame("FailedCatch") 
+        
 
 #Pokemon has yet to be rolled
 class UnknownPokemon(tk.Frame):
@@ -140,9 +190,9 @@ class RolledEncounter(tk.Frame):
         PokemonName.pack()
         
         if(Pokemon.name != "NOCAPTURE"):
-            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: controller.show_frame("SuccessfulCatch"))
+            successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Caught"), controller.show_frame("SuccessfulCatch")])
             successfulCapture.pack()
-            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [removePokemon(Pokemon), controller.show_frame("FailedCatch")])
+            failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Failed"), removePokemon(Pokemon), controller.show_frame("FailedCatch")])
             failedCapture.pack()
         
 class SuccessfulCatch(tk.Frame):
@@ -192,7 +242,7 @@ class FailedCatch(tk.Frame):
         PokemonName.pack()
 
 #window = tk.Tk()
-#window.title("Pokemon Scarlet and Violet Nuzlocke Tool")
+#window.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
 
 
 class UnknownStarter(tk.Frame):
@@ -311,9 +361,8 @@ class Node(tk.Frame):
         frame = self.frames[page_name]
         frame.tkraise()
     
-    def restore_pokemon(self, route, pokemonName):
-        confirmPokemon(pokemonName, route)
-        self.show_frame("RolledEncounter")
+    def restore_pokemon(self, pokemonName, route, status):
+        loadPokemon(pokemonName, route, status, self)
         
     def getNode(self):
         return self
@@ -330,11 +379,11 @@ def switch():
 def save():
     file = asksaveasfilename(initialfile='SaveData.csv', defaultextension=".csv",filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     with open(file, 'w', newline='') as f:
-        header=['Pokemon','Route']
+        header=['Pokemon','Route','Status']
         writer = csv.DictWriter(f, fieldnames=header)
         writer.writeheader()
         for pair in PkmnRoutePairs:
-            writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1]})
+            writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1], 'Status' : pair[2]})
             
 def load():
     with open("SaveData.csv", 'r', newline='') as reader:
@@ -343,7 +392,7 @@ def load():
             index = fileName.index(row['Route'])
             r = int(index/8)
             c = index%8
-            nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'])
+            nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
 
 def assignLevelCap(lc):
     global currentLevelCap

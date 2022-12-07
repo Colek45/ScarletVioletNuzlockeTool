@@ -1,8 +1,5 @@
-Pokemon,Route,Condition
+Pokemon,Route,Status
 Sprigatito,Starter,Starter
-Scatterbug,PocoPath,Rolled
-Surskit,SP1,Rolled
-Petilil,SP2,Rolled
-NOCAPTURE,SP3,Rolled
-Petilil,South Province Area Two,Failed
-Surskit,South Province Area One,Caught
+Hoppip,PocoPath,Rolled
+Maschiff,SP1,Rolled
+Fidough,SP2,Rolled
