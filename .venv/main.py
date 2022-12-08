@@ -9,6 +9,7 @@ from PIL import ImageTk, Image
 import random
 import re
 from pathlib import Path
+import os
 
 #encounter data from https://pokemondb.net/location#tab=loc-paldea
 
@@ -25,7 +26,9 @@ isScarlet = True
 #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
 #read list of routes
-rpath = Path(".venv/csv_files/routes.csv")
+fileDirectory = os.path.dirname(os.path.abspath(__file__))
+print(fileDirectory)
+rpath = fileDirectory + "/csv_files/routes.csv"
 with open(rpath, newline='') as csvfile:
     routeReader = csv.DictReader(csvfile)
     for row in routeReader:
@@ -33,7 +36,7 @@ with open(rpath, newline='') as csvfile:
         fileName.append(row['filename'])
 
 #import all level caps
-lpath = Path(".venv/csv_files/levelcaps.csv")
+lpath = fileDirectory + "/csv_files/levelcaps.csv"
 with open(lpath, newline='') as csvfile:
     routeReader = csv.DictReader(csvfile)
     for row in routeReader:
@@ -145,7 +148,8 @@ def loadPokemon(pokemonName, routeName, status, controller):
             case "Caught":
                 controller.show_frame("SuccessfulCatch")
             case "Failed":
-                controller.show_frame("FailedCatch") 
+                controller.show_frame("FailedCatch")
+    PkmnRoutePairs.append([pokemonName, routeName, status])
         
 
 #Pokemon has yet to be rolled
