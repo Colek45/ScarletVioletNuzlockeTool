@@ -10,37 +10,6 @@ import random
 import re
 from pathlib import Path
 import os
-
-#encounter data from https://pokemondb.net/location#tab=loc-paldea
-
-CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
-pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
-Encounters = [] #keeps track of route names
-fileName = [] #keeps track of csv file names
-PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
-LevelCaps = [] #keeps track of level caps
-scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
-violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
-global currentLevelCap
-isScarlet = True
-#G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
-
-#read list of routes
-fileDirectory = os.path.dirname(os.path.abspath(__file__))
-print(fileDirectory)
-rpath = fileDirectory + "/csv_files/routes.csv"
-with open(rpath, newline='') as csvfile:
-    routeReader = csv.DictReader(csvfile)
-    for row in routeReader:
-        Encounters.append(row['routename'])
-        fileName.append(row['filename'])
-
-#import all level caps
-lpath = fileDirectory + "/csv_files/levelcaps.csv"
-with open(lpath, newline='') as csvfile:
-    routeReader = csv.DictReader(csvfile)
-    for row in routeReader:
-        LevelCaps.append(row)
         
 def rollEncounter(route, controller):
     global currentLevelCap
@@ -403,44 +372,85 @@ def assignLevelCap(lc):
     currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
     print(currentLevelCap)
         
- 
-        
-app = tk.Tk()
-app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
-#indicating which version
-onresized = Image.open("images/isScarlet.png").resize((150,100))
-on = ImageTk.PhotoImage(onresized)
-offresized = Image.open("images/isViolet.png").resize((150,100))
-off = ImageTk.PhotoImage(offresized)
-on_button = tk.Button(app, image=on, bd=0, command=switch)
-on_button.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
-scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
-violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
-#save and load buttons
-save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.S, tk.E, tk.W))
-load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
-#level caps menu
-clicked = tk.StringVar()
-clicked.set(LevelCaps[0])
-currentLevelCap = 15
-drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
-drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
+def main():
+    #encounter data from https://pokemondb.net/location#tab=loc-paldea
+    global CaughtPokemon
+    global pkmnname
+    global Encounters
+    global fileName
+    global PkmnRoutePairs
+    global LevelCaps
+    global scarletExclusives
+    global violetExclusives
+    global isScarlet
+    global nodes
+    CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
+    pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
+    Encounters = [] #keeps track of route names
+    fileName = [] #keeps track of csv file names
+    PkmnRoutePairs = [] #keeps track of Pokemon/route pairs
+    LevelCaps = [] #keeps track of level caps
+    scarletExclusives = ["Larvitar", "Pupitar", "Tyranitar", "Drifloon", "Drifblim", "Stunky", "Skuntank", "Deino", "Zweilous", "Hydregion", "Skrelp", "Dragalge", "Oranguru", "Stonjourner", "Great Tusk", "Brute Bonnet", "Sandy Shocks", "Scream Tail", "Flutter Mane", "Slither Wing", "Roaring Moon", "Armarouge", "Koraidon"]
+    violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
+    global currentLevelCap
+    isScarlet = True
+    #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
 
-nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
-for r in range(4):
+    #read list of routes
+    fileDirectory = os.path.dirname(os.path.abspath(__file__))
+    print(fileDirectory)
+    rpath = fileDirectory + "/csv_files/routes.csv"
+    with open(rpath, newline='') as csvfile:
+        routeReader = csv.DictReader(csvfile)
+        for row in routeReader:
+            Encounters.append(row['routename'])
+            fileName.append(row['filename'])
+
+    #import all level caps
+    lpath = fileDirectory + "/csv_files/levelcaps.csv"
+    with open(lpath, newline='') as csvfile:
+        routeReader = csv.DictReader(csvfile)
+        for row in routeReader:
+            LevelCaps.append(row)
+            
+    app = tk.Tk()
+    app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
+    #indicating which version
+    onresized = Image.open("images/isScarlet.png").resize((150,100))
+    on = ImageTk.PhotoImage(onresized)
+    offresized = Image.open("images/isViolet.png").resize((150,100))
+    off = ImageTk.PhotoImage(offresized)
+    on_button = tk.Button(app, image=on, bd=0, command=switch)
+    on_button.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+    scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
+    violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
+    #save and load buttons
+    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.S, tk.E, tk.W))
+    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+    #level caps menu
+    clicked = tk.StringVar()
+    clicked.set(LevelCaps[0])
+    currentLevelCap = 15
+    drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
+    drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+    nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
+    for r in range(4):
+        for c in range(8):
+            index = 8*r + c
+            node = Node(index)
+            nodes[r][c] = node
+            nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+    #intended width = 1382
+    #intended height = 864
+    for r in range(5):
+        app.grid_rowconfigure(r, weight=1)
     for c in range(8):
-        index = 8*r + c
-        node = Node(index)
-        nodes[r][c] = node
-        nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
-#intended width = 1382
-#intended height = 864
-for r in range(5):
-    app.grid_rowconfigure(r, weight=1)
-for c in range(8):
-    app.grid_columnconfigure(c, weight=1)
-app.mainloop()
+        app.grid_columnconfigure(c, weight=1)
+    app.mainloop()
 
+if __name__ == "__main__":
+    main()
     
 #TODO
 """
