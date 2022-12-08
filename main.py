@@ -457,13 +457,14 @@ if __name__ == "__main__":
 #TODO
 """
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
-2. Get scrollbar working (maybe) OR add resolution options [Alpha]
+2. Get scrollbar working (maybe) OR add resolution options [Beta]
 3. Add saving and loading functionality [Beta]
 4. Download all Pokemon images (COMPLETE)
 5. Input Encounters into csv files (COMPLETE)
 6. Fix layout to make it look nice and symmetrical [Final Release]
 7. Deal with version exclusives (COMPLETE)
 8. Add level caps (COMPLETE)
+9. Add feature that shows where you can get Pokemon of your level cap [Beta or Final]
 """
     
         
