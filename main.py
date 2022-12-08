@@ -340,7 +340,8 @@ class Node(tk.Frame):
     def getNode(self):
         return self
 
-def switch():
+def switch(on, off):
+    global on_button
     global isScarlet
     if isScarlet:
         on_button.config(image = off)
@@ -384,6 +385,7 @@ def main():
     global violetExclusives
     global isScarlet
     global nodes
+    global on_button
     CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
     pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
     Encounters = [] #keeps track of route names
@@ -420,7 +422,7 @@ def main():
     on = ImageTk.PhotoImage(onresized)
     offresized = Image.open("images/isViolet.png").resize((150,100))
     off = ImageTk.PhotoImage(offresized)
-    on_button = tk.Button(app, image=on, bd=0, command=switch)
+    on_button = tk.Button(app, image=on, bd=0, command=lambda: switch(on, off))
     on_button.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
     scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
     violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
