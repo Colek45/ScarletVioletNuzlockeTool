@@ -4,7 +4,7 @@ import csvreader
 import csv
 import tkinter as tk
 from tkinter import font as tkfont
-from tkinter.filedialog import asksaveasfile, asksaveasfilename
+from tkinter.filedialog import asksaveasfile, asksaveasfilename, askopenfilename
 from PIL import ImageTk, Image  
 import random
 import re
@@ -92,11 +92,11 @@ def loadPokemon(pokemonName, routeName, status, controller):
     if status == "Starter":
         match pokemonName:
             case "Sprigatito":
-                controller.frames["SprigatitoStarter"] = FuecocoStarter(parent=controller.container, Route=Route, controller=controller)
+                controller.frames["SprigatitoStarter"] = SprigatitoStarter(parent=controller.container, Route=Route, controller=controller)
                 controller.frames["SprigatitoStarter"].grid(row=0, column=0, sticky="nsew")
                 controller.show_frame("SprigatitoStarter")
             case "Quaxly":
-                controller.frames["QuaxlyStarter"] = FuecocoStarter(parent=controller.container, Route=Route, controller=controller)
+                controller.frames["QuaxlyStarter"] = QuaxlyStarter(parent=controller.container, Route=Route, controller=controller)
                 controller.frames["QuaxlyStarter"].grid(row=0, column=0, sticky="nsew")
                 controller.show_frame("QuaxlyStarter")
             case "Fuecoco":
@@ -360,7 +360,8 @@ def save():
             writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1], 'Status' : pair[2]})
             
 def load():
-    with open("SaveData.csv", 'r', newline='') as reader:
+    file = askopenfilename(initialdir = './', defaultextension=".csv", filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
+    with open(file, 'r', newline='') as reader:
         read = csv.DictReader(reader)
         for row in read:
             index = fileName.index(row['Route'])
@@ -396,8 +397,7 @@ def main():
     violetExclusives = ["Misdreavus", "Gulpin", "Swalot", "Bagon", "Shelgon", "Salamence", "Mismagius", "Clauncher", "Clawitzer", "Passimian", "Dreepy", "Drakloak", "Dragapult", "Eiscue", "Iron Treads", "Iron Moth", "Iron Hands", "Iron Jugulis", "Iron Thorns", "Iron Bundle", "Iron Valiant", "Ceruledge", "Miraidon"]
     global currentLevelCap
     isScarlet = True
-    #G = Gym, T = Titan, S = Star, Cl = Clavell, Ne = Nemona, Ar = Arven, Pe = Penny, ST = Sada/Turo, E4 = Elite Four + Champion
-
+    
     #read list of routes
     fileDirectory = os.path.dirname(os.path.abspath(__file__))
     print(fileDirectory)
