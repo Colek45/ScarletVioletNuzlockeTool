@@ -7,6 +7,8 @@ The current version handles version exclusives, level caps, duplicates, failed c
 
 To make the randomizer tool work, either run the exe file from dist/main or run main.py from the terminal. Saving and loading is a little buggy, but does work if you save in the main folder.
 
+To run the program, download the entire repository and from your command line/terminal, run 'python3 main.py'. Another option is that there is an exe file inside of the dist/main folder that can run the program, but this has not been fully bug tested.
+
 Big things for this release and what we need to work on for future releases:
 * Resolution
 * Fixing Layout
