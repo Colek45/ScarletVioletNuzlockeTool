@@ -35,7 +35,7 @@
    'C:\\Users\\amyda\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth__tkinter.py',
    'PYSOURCE'),
   ('main',
-   'C:\\Users\\amyda\\Documents\\github\\ScarletVioletNuzlockeTool\\.venv\\main.py',
+   'C:\\Users\\amyda\\Documents\\github\\ScarletVioletNuzlockeTool\\main.py',
    'PYSOURCE')],
  True,
  False,
