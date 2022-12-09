@@ -465,6 +465,7 @@ if __name__ == "__main__":
 7. Deal with version exclusives (COMPLETE)
 8. Add level caps (COMPLETE)
 9. Add feature that shows where you can get Pokemon of your level cap [Beta or Final]
+10. Error handling for loading files [Beta]
 """
     
         
