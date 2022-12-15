@@ -371,6 +371,7 @@ def load():
 
 def assignLevelCap(lc):
     global currentLevelCap
+    global clicked
     currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
     print(currentLevelCap)
         
@@ -387,6 +388,7 @@ def main():
     global isScarlet
     global nodes
     global on_button
+    global clicked
     CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
     pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
     Encounters = [] #keeps track of route names
@@ -432,7 +434,7 @@ def main():
     #level caps menu
     clicked = tk.StringVar()
     clicked.set(LevelCaps[0])
-    currentLevelCap = 15
+    #currentLevelCap = 15
     drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
     drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
 
@@ -466,7 +468,8 @@ if __name__ == "__main__":
 8. Add level caps (COMPLETE)
 9. Add feature that shows where you can get Pokemon of your level cap [Beta or Final]
 10. Error handling for loading files [Beta]
-11. Implement rerolls. [Beta or final]
+11. Implement rerolls. [Beta]
+12. Manual adding/removing of Pokemon [Beta or final]
 """
     
         
