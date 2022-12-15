@@ -364,9 +364,11 @@ def load():
     global CaughtPokemon
     global PkmnRoutePairs
     global pkmnname
+    global Encounters
     pkmnname.clear()
     CaughtPokemon.clear()
     PkmnRoutePairs.clear()
+    tempEncounters = []
     file = askopenfilename(initialdir = './', defaultextension=".csv", filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
     
     with open(file, 'r', newline='') as reader:
@@ -376,6 +378,17 @@ def load():
             r = int(index/8)
             c = index%8
             nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
+            tempEncounters.append(Encounters[index])
+        templist = list(set(Encounters) - set(tempEncounters))
+        for route in templist:
+            index = Encounters.index(route)
+            r = int(index/8)
+            c = index%8
+            nodes[r][c] = Node(index)
+            if route != "Starter":
+                nodes[r][c].show_frame("UnknownPokemon")
+            else:
+                nodes[r][c].show_frame("UnknownStarter")
     pass
 
 def assignLevelCap(lc):
