@@ -13,6 +13,7 @@ import os
         
 def rollEncounter(route, controller):
     global currentLevelCap
+    global CaughtPokemon
     tuple = csvreader.getPokemon(route)
     PokemonChoices = tuple[0]
     PokemonLevels = tuple[1]
@@ -360,7 +361,14 @@ def save():
             writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1], 'Status' : pair[2]})
             
 def load():
+    global CaughtPokemon
+    global PkmnRoutePairs
+    global pkmnname
+    pkmnname.clear()
+    CaughtPokemon.clear()
+    PkmnRoutePairs.clear()
     file = askopenfilename(initialdir = './', defaultextension=".csv", filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
+    
     with open(file, 'r', newline='') as reader:
         read = csv.DictReader(reader)
         for row in read:
@@ -368,6 +376,7 @@ def load():
             r = int(index/8)
             c = index%8
             nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
+    pass
 
 def assignLevelCap(lc):
     global currentLevelCap
