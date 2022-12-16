@@ -60,13 +60,13 @@ def rollEncounter(route, controller):
 
 def rerollEncounter(pokemonName, routeName, controller):
     global PkmnRoutePairs
-    deletedPokemon = Pokemon.Pokemon(pokemonName)
-    removePokemon(deletedPokemon)
-    for i, row in enumerate(PkmnRoutePairs):
-        if PkmnRoutePairs[i][0] == pokemonName:
-            del PkmnRoutePairs[i]
-            break
-    #PkmnRoutePairs.remove([pokemonName, routeName, "Rolled"])
+    if (pokemonName != "NOCAPTURE"):
+        deletedPokemon = Pokemon.Pokemon(pokemonName)
+        removePokemon(deletedPokemon)
+        for i, row in enumerate(PkmnRoutePairs):
+            if PkmnRoutePairs[i][0] == pokemonName:
+                del PkmnRoutePairs[i]
+                break
     rollEncounter(routeName, controller)
 
 def removePokemon(pokemonName):
