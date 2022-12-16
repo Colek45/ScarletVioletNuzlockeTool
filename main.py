@@ -13,7 +13,6 @@ import os
         
 def rollEncounter(route, controller):
     global currentLevelCap
-    global CaughtPokemon
     tuple = csvreader.getPokemon(route)
     PokemonChoices = tuple[0]
     PokemonLevels = tuple[1]
@@ -40,13 +39,11 @@ def rollEncounter(route, controller):
             
         choice = Pokemon.Pokemon(randomChoice)
         choice.setForms(randomChoice)
-        CaughtPokemon.append(choice)
         pkmnname.append(randomChoice)
         if (choice.forms.__len__ != 0):
             for form in choice.forms:
                 tempMon = Pokemon.Pokemon(form)
                 tempMon.setForms(form)
-                CaughtPokemon.append(tempMon)
                 pkmnname.append(form)
     
     index = fileName.index(route)
@@ -61,12 +58,24 @@ def rollEncounter(route, controller):
     controller.show_frame("RolledEncounter")
     return choice
 
+def rerollEncounter(pokemonName, routeName, controller):
+    global PkmnRoutePairs
+    deletedPokemon = Pokemon.Pokemon(pokemonName)
+    removePokemon(deletedPokemon)
+    for i, row in enumerate(PkmnRoutePairs):
+        if PkmnRoutePairs[i][0] == pokemonName:
+            del PkmnRoutePairs[i]
+            break
+    #PkmnRoutePairs.remove([pokemonName, routeName, "Rolled"])
+    rollEncounter(routeName, controller)
+
 def removePokemon(pokemonName):
+    global pkmnname
     deletedPokemon = pokemonName
     pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
         pkmnname.remove(Pokemon.Pokemon(forms).name)
-    print(pkmnname)
+    #print(pkmnname)
      
 def confirmPokemon(pokemonName, routeName, status):
     if status == "Caught" or status == "Failed":
@@ -80,13 +89,11 @@ def confirmPokemon(pokemonName, routeName, status):
 def loadPokemon(pokemonName, routeName, status, controller):
     choice = Pokemon.Pokemon(pokemonName)
     choice.setForms(pokemonName)
-    CaughtPokemon.append(choice)
     pkmnname.append(pokemonName)
     if (choice.forms.__len__ != 0):
         for form in choice.forms:
             tempMon = Pokemon.Pokemon(form)
             tempMon.setForms(form)
-            CaughtPokemon.append(tempMon)
             pkmnname.append(form)
     index = fileName.index(routeName)
     Route = Encounters[index]
@@ -162,12 +169,14 @@ class RolledEncounter(tk.Frame):
 
         PokemonName = tk.Label(self, text=Pokemon.name)
         PokemonName.pack()
-        
+        index = Encounters.index(Route)
         if(Pokemon.name != "NOCAPTURE"):
             successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Caught"), controller.show_frame("SuccessfulCatch")])
             successfulCapture.pack()
             failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Failed"), removePokemon(Pokemon), controller.show_frame("FailedCatch")])
             failedCapture.pack()
+        reroll = tk.Button(self, text="Reroll Encounter", command=lambda: [rerollEncounter(Pokemon.name, fileName[index], controller)])
+        reroll.pack()
         
 class SuccessfulCatch(tk.Frame):
     def __init__(self, parent, controller, Route, Pokemon):
@@ -361,12 +370,10 @@ def save():
             writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1], 'Status' : pair[2]})
             
 def load():
-    global CaughtPokemon
     global PkmnRoutePairs
     global pkmnname
     global Encounters
     pkmnname.clear()
-    CaughtPokemon.clear()
     PkmnRoutePairs.clear()
     tempEncounters = []
     file = askopenfilename(initialdir = './', defaultextension=".csv", filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
@@ -399,7 +406,6 @@ def assignLevelCap(lc):
         
 def main():
     #encounter data from https://pokemondb.net/location#tab=loc-paldea
-    global CaughtPokemon
     global pkmnname
     global Encounters
     global fileName
@@ -411,7 +417,6 @@ def main():
     global nodes
     global on_button
     global clicked
-    CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
     pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
     Encounters = [] #keeps track of route names
     fileName = [] #keeps track of csv file names
@@ -456,10 +461,12 @@ def main():
     #level caps menu
     clicked = tk.StringVar()
     clicked.set(LevelCaps[0])
-    #currentLevelCap = 15
+    currentLevelCap = 15
     drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
     drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
-
+    #scrollbar = tk.Scrollbar(app)
+    #scrollbar.pack(side = "right", fill = "y")
+    #nodes = tk.Listbox(app, scrollbar.set)
     nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
     for r in range(4):
         for c in range(8):
