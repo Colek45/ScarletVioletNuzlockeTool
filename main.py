@@ -3,6 +3,7 @@ import csvreader
 
 import csv
 import tkinter as tk
+from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter.filedialog import asksaveasfile, asksaveasfilename, askopenfilename
 from PIL import ImageTk, Image  
@@ -62,7 +63,10 @@ def rerollEncounter(pokemonName, routeName, controller):
     global PkmnRoutePairs
     if (pokemonName != "NOCAPTURE"):
         deletedPokemon = Pokemon.Pokemon(pokemonName)
-        removePokemon(deletedPokemon)
+        deletedPokemon.setForms(pokemonName)
+        pkmnname.remove(pokemonName)
+        for forms in deletedPokemon.forms:
+            pkmnname.remove(Pokemon.Pokemon(forms).name)
         for i, row in enumerate(PkmnRoutePairs):
             if PkmnRoutePairs[i][0] == pokemonName:
                 del PkmnRoutePairs[i]
@@ -74,6 +78,7 @@ def removePokemon(pokemonName):
     deletedPokemon = pokemonName
     pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
+        print(forms)
         pkmnname.remove(Pokemon.Pokemon(forms).name)
     #print(pkmnname)
      
@@ -456,17 +461,15 @@ def main():
     scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
     violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
     #save and load buttons
-    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.S, tk.E, tk.W))
-    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.E, tk.W))
+    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=4, sticky=(tk.S, tk.E, tk.W))
     #level caps menu
     clicked = tk.StringVar()
     clicked.set(LevelCaps[0])
     currentLevelCap = 15
     drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
-    drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
-    #scrollbar = tk.Scrollbar(app)
-    #scrollbar.pack(side = "right", fill = "y")
-    #nodes = tk.Listbox(app, scrollbar.set)
+    drop.grid(row=0, column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+    
     nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
     for r in range(4):
         for c in range(8):
@@ -476,10 +479,6 @@ def main():
             nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
     #intended width = 1382
     #intended height = 864
-    for r in range(5):
-        app.grid_rowconfigure(r, weight=1)
-    for c in range(8):
-        app.grid_columnconfigure(c, weight=1)
     app.mainloop()
 
 if __name__ == "__main__":
@@ -497,7 +496,7 @@ if __name__ == "__main__":
 8. Add level caps (COMPLETE)
 9. Add feature that shows where you can get Pokemon of your level cap [Beta or Final]
 10. Error handling for loading files [Beta]
-11. Implement rerolls. [Beta]
+11. Implement rerolls. (COMPLETE)
 12. Manual adding/removing of Pokemon [Beta or final]
 """
     
