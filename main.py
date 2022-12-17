@@ -314,8 +314,9 @@ class QuaxlyStarter(tk.Frame):
 
 
 class Node(tk.Frame):
-    def __init__(self, index, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
+    def __init__(self, parent, index, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
         Route = Encounters[index]
         #pkmn = rollEncounter(fileName[index])
         self.title_font = tkfont.Font(family='sans', size=14, weight="bold", slant="italic")
@@ -457,12 +458,12 @@ def main():
     offresized = Image.open("images/isViolet.png").resize((150,100))
     off = ImageTk.PhotoImage(offresized)
     on_button = tk.Button(app, image=on, bd=0, command=lambda: switch(on, off))
-    on_button.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
-    scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
-    violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
+    on_button.grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
+    scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+    violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
     #save and load buttons
-    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.E, tk.W))
-    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=4, sticky=(tk.S, tk.E, tk.W))
+    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=3, sticky=(tk.N, tk.E, tk.W))
+    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=3, sticky=(tk.S, tk.E, tk.W))
     #level caps menu
     clicked = tk.StringVar()
     clicked.set(LevelCaps[0])
@@ -470,15 +471,45 @@ def main():
     drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
     drop.grid(row=0, column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
     
-    nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
-    for r in range(4):
-        for c in range(8):
-            index = 8*r + c
-            node = Node(index)
+    frame_canvas = tk.Frame(app)
+    frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')
+    frame_canvas.grid_rowconfigure(0, weight=1)
+    frame_canvas.grid_columnconfigure(0, weight=1)
+    # Set grid_propagate to False to allow 5-by-5 buttons resizing later
+    frame_canvas.grid_propagate(False)
+
+    # Add a canvas in that frame
+    canvas = tk.Canvas(frame_canvas, bg="yellow")
+    canvas.grid(row=0, column=0, sticky="news")
+
+    # Link a scrollbar to the canvas
+    vsb = tk.Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)
+    vsb.grid(row=0, column=1, sticky='ns')
+    canvas.configure(yscrollcommand=vsb.set)
+
+    # Create a frame to contain the buttons
+    frame_nodes = tk.Frame(canvas, bg="blue")
+    canvas.create_window((0, 0), window=frame_nodes, anchor='nw')
+    
+    nodes = [[Node(parent=frame_nodes, index=4*r+c) for c in range(4)] for r in range(8)]
+    for r in range(8):
+        for c in range(4):
+            index = 4*r + c
+            node = Node(parent=frame_nodes, index=index)
             nodes[r][c] = node
             nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
     #intended width = 1382
     #intended height = 864
+    frame_nodes.update_idletasks()
+
+# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
+    first4columns_width = sum([nodes[0][j].winfo_width() for j in range(0, 4)])
+    first4rows_height = sum([nodes[i][0].winfo_height() for i in range(0, 4)])
+    frame_canvas.config(width=first4columns_width + vsb.winfo_width(),
+                        height=first4rows_height)
+
+    # Set the canvas scrolling region
+    canvas.config(scrollregion=canvas.bbox("all"))
     app.mainloop()
 
 if __name__ == "__main__":
