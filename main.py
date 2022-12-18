@@ -320,7 +320,7 @@ class Node(tk.Frame):
         Route = Encounters[index]
         #pkmn = rollEncounter(fileName[index])
         self.title_font = tkfont.Font(family='sans', size=14, weight="bold", slant="italic")
-        self.container = tk.Frame(self)
+        self.container = tk.Frame(self, padx=(25), pady=(25))
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
@@ -452,6 +452,8 @@ def main():
             
     app = tk.Tk()
     app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
+    
+    
     #indicating which version
     onresized = Image.open("images/isScarlet.png").resize((150,100))
     on = ImageTk.PhotoImage(onresized)
@@ -471,15 +473,15 @@ def main():
     drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
     drop.grid(row=0, column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
     
+    #code to get scrollbar working from https://stackoverflow.com/questions/43731784/tkinter-canvas-scrollbar-with-grid
     frame_canvas = tk.Frame(app)
-    frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')
+    frame_canvas.grid(row=1, column=0, pady=(25, 25), sticky='nw')
     frame_canvas.grid_rowconfigure(0, weight=1)
     frame_canvas.grid_columnconfigure(0, weight=1)
-    # Set grid_propagate to False to allow 5-by-5 buttons resizing later
     frame_canvas.grid_propagate(False)
 
     # Add a canvas in that frame
-    canvas = tk.Canvas(frame_canvas, bg="yellow")
+    canvas = tk.Canvas(frame_canvas)
     canvas.grid(row=0, column=0, sticky="news")
 
     # Link a scrollbar to the canvas
@@ -488,7 +490,7 @@ def main():
     canvas.configure(yscrollcommand=vsb.set)
 
     # Create a frame to contain the buttons
-    frame_nodes = tk.Frame(canvas, bg="blue")
+    frame_nodes = tk.Frame(canvas)
     canvas.create_window((0, 0), window=frame_nodes, anchor='nw')
     
     nodes = [[Node(parent=frame_nodes, index=4*r+c) for c in range(4)] for r in range(8)]
@@ -497,14 +499,13 @@ def main():
             index = 4*r + c
             node = Node(parent=frame_nodes, index=index)
             nodes[r][c] = node
-            nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+            nodes[r][c].grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
     #intended width = 1382
     #intended height = 864
     frame_nodes.update_idletasks()
 
-# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
     first4columns_width = sum([nodes[0][j].winfo_width() for j in range(0, 4)])
-    first4rows_height = sum([nodes[i][0].winfo_height() for i in range(0, 4)])
+    first4rows_height = sum([nodes[i][0].winfo_height()*.75 for i in range(0, 4)])
     frame_canvas.config(width=first4columns_width + vsb.winfo_width(),
                         height=first4rows_height)
 
