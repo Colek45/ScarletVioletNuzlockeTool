@@ -387,16 +387,24 @@ def load():
     with open(file, 'r', newline='') as reader:
         read = csv.DictReader(reader)
         for row in read:
-            index = fileName.index(row['Route'])
-            r = int(index/8)
-            c = index%8
-            nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
-            tempEncounters.append(Encounters[index])
+            try:
+                if row['Route'] != "null":
+                    index = fileName.index(row['Route'])
+                    r = int(index/4)
+                    c = index%4
+                    nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
+                    tempEncounters.append(Encounters[index])
+            except:
+                top= tk.Toplevel()
+                top.geometry("750x250")
+                top.title("Child Window")
+                tk.Label(top, text= "Error! Invalid load file!", font=('sans 18 bold')).place(x=150,y=80)
+                return
         templist = list(set(Encounters) - set(tempEncounters))
         for route in templist:
             index = Encounters.index(route)
-            r = int(index/8)
-            c = index%8
+            r = int(index/4)
+            c = index%4
             nodes[r][c] = Node(index)
             if route != "Starter":
                 nodes[r][c].show_frame("UnknownPokemon")
@@ -436,6 +444,7 @@ def main():
     global nodes
     global on_button
     global clicked
+    global app
     pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
     Encounters = [] #keeps track of route names
     fileName = [] #keeps track of csv file names
@@ -542,10 +551,9 @@ if __name__ == "__main__":
 6. Fix layout to make it look nice and symmetrical [Final Release]
 7. Deal with version exclusives (COMPLETE)
 8. Add level caps (COMPLETE)
-9. Add feature that shows where you can get Pokemon of your level cap [Beta or Final]
-10. Error handling for loading files [Beta]
+9. Add feature that shows where you can get Pokemon of your level cap (Maybe)
+10. Error handling for loading files (COMPLETE)
 11. Implement rerolls. (COMPLETE)
-12. Manual adding/removing of Pokemon [Beta or final]
 """
     
         
