@@ -3,6 +3,7 @@ import csvreader
 
 import csv
 import tkinter as tk
+from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter.filedialog import asksaveasfile, asksaveasfilename, askopenfilename
 from PIL import ImageTk, Image  
@@ -13,7 +14,6 @@ import os
         
 def rollEncounter(route, controller):
     global currentLevelCap
-    global CaughtPokemon
     tuple = csvreader.getPokemon(route)
     PokemonChoices = tuple[0]
     PokemonLevels = tuple[1]
@@ -40,13 +40,11 @@ def rollEncounter(route, controller):
             
         choice = Pokemon.Pokemon(randomChoice)
         choice.setForms(randomChoice)
-        CaughtPokemon.append(choice)
         pkmnname.append(randomChoice)
         if (choice.forms.__len__ != 0):
             for form in choice.forms:
                 tempMon = Pokemon.Pokemon(form)
                 tempMon.setForms(form)
-                CaughtPokemon.append(tempMon)
                 pkmnname.append(form)
     
     index = fileName.index(route)
@@ -61,12 +59,28 @@ def rollEncounter(route, controller):
     controller.show_frame("RolledEncounter")
     return choice
 
+def rerollEncounter(pokemonName, routeName, controller):
+    global PkmnRoutePairs
+    if (pokemonName != "NOCAPTURE"):
+        deletedPokemon = Pokemon.Pokemon(pokemonName)
+        deletedPokemon.setForms(pokemonName)
+        pkmnname.remove(pokemonName)
+        for forms in deletedPokemon.forms:
+            pkmnname.remove(Pokemon.Pokemon(forms).name)
+        for i, row in enumerate(PkmnRoutePairs):
+            if PkmnRoutePairs[i][0] == pokemonName:
+                del PkmnRoutePairs[i]
+                break
+    rollEncounter(routeName, controller)
+
 def removePokemon(pokemonName):
+    global pkmnname
     deletedPokemon = pokemonName
     pkmnname.remove(deletedPokemon.name)
     for forms in deletedPokemon.forms:
+        print(forms)
         pkmnname.remove(Pokemon.Pokemon(forms).name)
-    print(pkmnname)
+    #print(pkmnname)
      
 def confirmPokemon(pokemonName, routeName, status):
     if status == "Caught" or status == "Failed":
@@ -80,13 +94,11 @@ def confirmPokemon(pokemonName, routeName, status):
 def loadPokemon(pokemonName, routeName, status, controller):
     choice = Pokemon.Pokemon(pokemonName)
     choice.setForms(pokemonName)
-    CaughtPokemon.append(choice)
     pkmnname.append(pokemonName)
     if (choice.forms.__len__ != 0):
         for form in choice.forms:
             tempMon = Pokemon.Pokemon(form)
             tempMon.setForms(form)
-            CaughtPokemon.append(tempMon)
             pkmnname.append(form)
     index = fileName.index(routeName)
     Route = Encounters[index]
@@ -162,12 +174,14 @@ class RolledEncounter(tk.Frame):
 
         PokemonName = tk.Label(self, text=Pokemon.name)
         PokemonName.pack()
-        
+        index = Encounters.index(Route)
         if(Pokemon.name != "NOCAPTURE"):
             successfulCapture = tk.Button(self, text = "Succesful Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Caught"), controller.show_frame("SuccessfulCatch")])
             successfulCapture.pack()
             failedCapture = tk.Button(self, text="Failed Capture", command=lambda: [confirmPokemon(Pokemon, Route, "Failed"), removePokemon(Pokemon), controller.show_frame("FailedCatch")])
             failedCapture.pack()
+        reroll = tk.Button(self, text="Reroll Encounter", command=lambda: [rerollEncounter(Pokemon.name, fileName[index], controller)])
+        reroll.pack()
         
 class SuccessfulCatch(tk.Frame):
     def __init__(self, parent, controller, Route, Pokemon):
@@ -300,12 +314,13 @@ class QuaxlyStarter(tk.Frame):
 
 
 class Node(tk.Frame):
-    def __init__(self, index, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
+    def __init__(self, parent, index, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
         Route = Encounters[index]
         #pkmn = rollEncounter(fileName[index])
         self.title_font = tkfont.Font(family='sans', size=14, weight="bold", slant="italic")
-        self.container = tk.Frame(self)
+        self.container = tk.Frame(self, padx=(25), pady=(25))
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
@@ -361,12 +376,10 @@ def save():
             writer.writerow({'Pokemon' : pair[0], 'Route' : pair[1], 'Status' : pair[2]})
             
 def load():
-    global CaughtPokemon
     global PkmnRoutePairs
     global pkmnname
     global Encounters
     pkmnname.clear()
-    CaughtPokemon.clear()
     PkmnRoutePairs.clear()
     tempEncounters = []
     file = askopenfilename(initialdir = './', defaultextension=".csv", filetypes=[('All tyes(*.*)', '*.*'),("csv file(*.csv)","*.csv")])
@@ -374,16 +387,24 @@ def load():
     with open(file, 'r', newline='') as reader:
         read = csv.DictReader(reader)
         for row in read:
-            index = fileName.index(row['Route'])
-            r = int(index/8)
-            c = index%8
-            nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
-            tempEncounters.append(Encounters[index])
+            try:
+                if row['Route'] != "null":
+                    index = fileName.index(row['Route'])
+                    r = int(index/4)
+                    c = index%4
+                    nodes[r][c].restore_pokemon(row['Pokemon'], row['Route'], row['Status'])
+                    tempEncounters.append(Encounters[index])
+            except:
+                top= tk.Toplevel()
+                top.geometry("750x250")
+                top.title("Child Window")
+                tk.Label(top, text= "Error! Invalid load file!", font=('sans 18 bold')).place(x=150,y=80)
+                return
         templist = list(set(Encounters) - set(tempEncounters))
         for route in templist:
             index = Encounters.index(route)
-            r = int(index/8)
-            c = index%8
+            r = int(index/4)
+            c = index%4
             nodes[r][c] = Node(index)
             if route != "Starter":
                 nodes[r][c].show_frame("UnknownPokemon")
@@ -396,10 +417,22 @@ def assignLevelCap(lc):
     global clicked
     currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
     print(currentLevelCap)
+    
+class amogusFrame(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        UnknownImage = Image.open("images/empty.png")
+        resizeImage = UnknownImage.resize((150,400))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
         
 def main():
     #encounter data from https://pokemondb.net/location#tab=loc-paldea
-    global CaughtPokemon
     global pkmnname
     global Encounters
     global fileName
@@ -411,7 +444,7 @@ def main():
     global nodes
     global on_button
     global clicked
-    CaughtPokemon = [] #keeps track of Pokemon caught during nuzlocke
+    global app
     pkmnname = [] #keeps track of Pokemon caught during nuzlocke, but their names instead of the pokemon object
     Encounters = [] #keeps track of route names
     fileName = [] #keeps track of csv file names
@@ -441,38 +474,68 @@ def main():
             
     app = tk.Tk()
     app.title("Pokemon Scarlet and Violet Nuzlocke Assistant")
+    
+    
     #indicating which version
     onresized = Image.open("images/isScarlet.png").resize((150,100))
     on = ImageTk.PhotoImage(onresized)
     offresized = Image.open("images/isViolet.png").resize((150,100))
     off = ImageTk.PhotoImage(offresized)
     on_button = tk.Button(app, image=on, bd=0, command=lambda: switch(on, off))
-    on_button.grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
-    scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
-    violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=3, sticky=(tk.N, tk.S, tk.E, tk.W))
+    on_button.grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W))
+    scarletLabel = tk.Label(app, text="Scarlet", fg='#D81414', font=("sans 16 bold"), anchor="e").grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+    violetLabel = tk.Label(app, text="Violet", fg='#8A14D8', font=("sans 16 bold"), anchor="w").grid(row=0, column=2, sticky=(tk.N, tk.S, tk.E, tk.W))
     #save and load buttons
-    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=4, sticky=(tk.N, tk.S, tk.E, tk.W))
-    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+    save_btn = tk.Button(app, text="Save", bg='#D81414', fg='#8A14D8', font=("sans 20 bold"), command=save).grid(row=0,column=3, sticky=(tk.N, tk.E, tk.W))
+    load_btn = tk.Button(app, text="Load", bg='#8A14D8', fg='#D81414', font=("sans 20 bold"), command=load).grid(row=0,column=3, sticky=(tk.S, tk.E, tk.W))
     #level caps menu
     clicked = tk.StringVar()
     clicked.set(LevelCaps[0])
-    #currentLevelCap = 15
+    currentLevelCap = 15
     drop = tk.OptionMenu(app, clicked, *LevelCaps, command= assignLevelCap)
-    drop.grid(row=0, column=7, sticky=(tk.N, tk.S, tk.E, tk.W))
+    drop.grid(row=0, column=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+    
+    #code to get scrollbar working from https://stackoverflow.com/questions/43731784/tkinter-canvas-scrollbar-with-grid
+    frame_canvas = tk.Frame(app)
+    frame_canvas.grid(row=1, column=0, columnspan=6, pady=(25, 25), sticky='nesw')
+    frame_canvas.grid_rowconfigure(0, weight=1)
+    frame_canvas.grid_columnconfigure(0, weight=1)
+    frame_canvas.grid_propagate(False)
 
-    nodes = [[Node(8*r+c) for c in range(8)] for r in range(4)]
-    for r in range(4):
-        for c in range(8):
-            index = 8*r + c
-            node = Node(index)
-            nodes[r][c] = node
-            nodes[r][c].grid(row=r+1, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+    # Add a canvas in that frame
+    canvas = tk.Canvas(frame_canvas)
+    canvas.grid(row=0, column=0, sticky="news")
+
+    # Link a scrollbar to the canvas
+    vsb = tk.Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)
+    vsb.grid(row=0, column=1, sticky='ns')
+    canvas.configure(yscrollcommand=vsb.set)
+
+    # Create a frame to contain the buttons
+    frame_nodes = tk.Frame(canvas)
+    canvas.create_window((0, 0), window=frame_nodes, anchor='nw')
+    
+    nodes = [[Node(parent=frame_nodes, index=4*r+c) for c in range(4)] for r in range(9)]
+    for r in range(9):
+        for c in range(4):
+            if r < 8:
+                index = 4*r + c
+                node = Node(parent=frame_nodes, index=index)
+                nodes[r][c] = node
+                nodes[r][c].grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+            else:
+                nodes[r][c]=amogusFrame(parent=frame_nodes).grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+
     #intended width = 1382
     #intended height = 864
-    for r in range(5):
-        app.grid_rowconfigure(r, weight=1)
-    for c in range(8):
-        app.grid_columnconfigure(c, weight=1)
+    frame_nodes.update_idletasks()
+
+    first4columns_width = sum([nodes[0][j].winfo_width() for j in range(0, 4)])
+    first4rows_height = sum([nodes[i][0].winfo_height()*.75 for i in range(0, 4)])
+    frame_canvas.config(width=first4columns_width + vsb.winfo_width(), height=first4rows_height)
+
+    # Set the canvas scrolling region
+    canvas.config(scrollregion=canvas.bbox("all"))
     app.mainloop()
 
 if __name__ == "__main__":
@@ -481,17 +544,16 @@ if __name__ == "__main__":
 #TODO
 """
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
-2. Get scrollbar working (maybe) OR add resolution options [Beta]
+2. Get scrollbar working (maybe) OR add resolution options (COMPLETE)
 3. Add saving and loading functionality (COMPLETE)
 4. Download all Pokemon images (COMPLETE)
 5. Input Encounters into csv files (COMPLETE)
 6. Fix layout to make it look nice and symmetrical [Final Release]
 7. Deal with version exclusives (COMPLETE)
 8. Add level caps (COMPLETE)
-9. Add feature that shows where you can get Pokemon of your level cap [Beta or Final]
-10. Error handling for loading files [Beta]
-11. Implement rerolls. [Beta]
-12. Manual adding/removing of Pokemon [Beta or final]
+9. Add feature that shows where you can get Pokemon of your level cap (Maybe)
+10. Error handling for loading files (COMPLETE)
+11. Implement rerolls. (COMPLETE)
 """
     
         
