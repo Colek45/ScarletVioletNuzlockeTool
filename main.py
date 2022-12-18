@@ -409,6 +409,19 @@ def assignLevelCap(lc):
     global clicked
     currentLevelCap = int(re.search(r'\d+', clicked.get()[-9:]).group())
     print(currentLevelCap)
+    
+class amogusFrame(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        UnknownImage = Image.open("images/empty.png")
+        resizeImage = UnknownImage.resize((150,400))
+        img = ImageTk.PhotoImage(master=self, image=resizeImage)
+        
+        label1 = tk.Label(self, image=img)
+        label1.image = img
+
+        label1.pack()
         
 def main():
     #encounter data from https://pokemondb.net/location#tab=loc-paldea
@@ -475,7 +488,7 @@ def main():
     
     #code to get scrollbar working from https://stackoverflow.com/questions/43731784/tkinter-canvas-scrollbar-with-grid
     frame_canvas = tk.Frame(app)
-    frame_canvas.grid(row=1, column=0, pady=(25, 25), sticky='nw')
+    frame_canvas.grid(row=1, column=0, columnspan=6, pady=(25, 25), sticky='nesw')
     frame_canvas.grid_rowconfigure(0, weight=1)
     frame_canvas.grid_columnconfigure(0, weight=1)
     frame_canvas.grid_propagate(False)
@@ -493,21 +506,24 @@ def main():
     frame_nodes = tk.Frame(canvas)
     canvas.create_window((0, 0), window=frame_nodes, anchor='nw')
     
-    nodes = [[Node(parent=frame_nodes, index=4*r+c) for c in range(4)] for r in range(8)]
-    for r in range(8):
+    nodes = [[Node(parent=frame_nodes, index=4*r+c) for c in range(4)] for r in range(9)]
+    for r in range(9):
         for c in range(4):
-            index = 4*r + c
-            node = Node(parent=frame_nodes, index=index)
-            nodes[r][c] = node
-            nodes[r][c].grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+            if r < 8:
+                index = 4*r + c
+                node = Node(parent=frame_nodes, index=index)
+                nodes[r][c] = node
+                nodes[r][c].grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+            else:
+                nodes[r][c]=amogusFrame(parent=frame_nodes).grid(row=r, column=c, sticky=(tk.N, tk.S, tk.E, tk.W))
+
     #intended width = 1382
     #intended height = 864
     frame_nodes.update_idletasks()
 
     first4columns_width = sum([nodes[0][j].winfo_width() for j in range(0, 4)])
     first4rows_height = sum([nodes[i][0].winfo_height()*.75 for i in range(0, 4)])
-    frame_canvas.config(width=first4columns_width + vsb.winfo_width(),
-                        height=first4rows_height)
+    frame_canvas.config(width=first4columns_width + vsb.winfo_width(), height=first4rows_height)
 
     # Set the canvas scrolling region
     canvas.config(scrollregion=canvas.bbox("all"))
@@ -519,7 +535,7 @@ if __name__ == "__main__":
 #TODO
 """
 1. Fix duplicate logic and rolling logic so that rolls are not done prior to pressing the button to roll for the encounter (COMPLETE)
-2. Get scrollbar working (maybe) OR add resolution options [Beta]
+2. Get scrollbar working (maybe) OR add resolution options (COMPLETE)
 3. Add saving and loading functionality (COMPLETE)
 4. Download all Pokemon images (COMPLETE)
 5. Input Encounters into csv files (COMPLETE)
