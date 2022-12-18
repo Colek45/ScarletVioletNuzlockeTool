@@ -7,12 +7,13 @@ The current version handles version exclusives, level caps, duplicates, failed c
 
 To run the program, download the entire repository and from your command line/terminal, run 'python3 main.py'. Another option is that there is an exe file inside of the dist/main folder that can run the program. You can save and load your progress using the save and load buttons respectively to anywhere on your computer.
 
+Tutorial video: https://youtu.be/55MgY__1bo0
+
 Here is what we need to work on for the final release:
 * Fixing Layout
 * Add an evolution button
 * Make executable easier to activate
 * Make executable available on OSX
-* Make tutorial video
 
 Special thanks go to Serebii and PokemonDB for having the pokemon data and encounter data that we used to create the encounter rates.
 
